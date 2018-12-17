@@ -9,4 +9,6 @@ public interface TopoService {
     public TestEntity getJPAInfo();
 
     public void getLldpInfo();
+
+    void getWeaveInfo();
 }

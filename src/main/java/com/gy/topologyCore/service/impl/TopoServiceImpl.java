@@ -8,9 +8,10 @@ import com.gy.topologyCore.entity.lldp.LocalHashNode;
 import com.gy.topologyCore.entity.lldp.LocalInfo;
 import com.gy.topologyCore.entity.monitor.LightTypeEntity;
 import com.gy.topologyCore.entity.monitor.MiddleTypeEntity;
-import com.gy.topologyCore.entity.monitor.OperationMonitorEntity;
+import com.gy.topologyCore.entity.weave.WeaveContainerImageCluster;
 import com.gy.topologyCore.service.MonitorService;
 import com.gy.topologyCore.service.TopoService;
+import com.gy.topologyCore.service.WeaveScopeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,9 @@ public class TopoServiceImpl implements TopoService {
 
     @Autowired
     private TopoDao dao;
+
+    @Autowired
+    private WeaveScopeService weaveScopeService;
 
     @Autowired
     private MonitorService monitorService;
@@ -180,5 +184,17 @@ public class TopoServiceImpl implements TopoService {
                 });
             }
         });
+    }
+
+    @Override
+    public void getWeaveInfo() {
+        WeaveContainerImageCluster imageClusterMap = weaveScopeService.getWeaveInfoFromBusiness();
+
+        imageClusterMap.getNodes();
+
+
+
+
+
     }
 }

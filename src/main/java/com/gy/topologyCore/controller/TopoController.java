@@ -31,6 +31,12 @@ public class TopoController {
     @ResponseBody
     public void getLldpInfo(String uuid){
 
-        service.getLldpInfo(uuid);
+        service.getLldpInfo();
+    }
+
+    @RequestMapping("getWeaveInfo")
+    @ResponseBody
+    public void getWeaveInfo(String uuid){
+        service.getWeaveInfo();
     }
 }
