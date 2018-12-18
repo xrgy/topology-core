@@ -5,6 +5,7 @@ import com.gy.topologyCore.dao.TopoDao;
 import com.gy.topologyCore.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -63,16 +64,19 @@ public class TopoDaoImpl implements TopoDao {
     }
 
     @Override
+    @Transactional
     public TopoNodeEntity insertTopoNode(TopoNodeEntity node) {
         return em.merge(node);
     }
 
     @Override
+    @Transactional
     public TopoPortEntity insertTopoPort(TopoPortEntity port) {
         return em.merge(port);
     }
 
     @Override
+    @Transactional
     public TopoLinkEntity insertTopoLink(TopoLinkEntity link) {
         return em.merge(link);
     }
@@ -105,7 +109,7 @@ public class TopoDaoImpl implements TopoDao {
     public void deleteLinkByCanvasId(String canvasId) {
         String sql = "delete from TopoLinkEntity link WHERE link.canvasId =:canvasId";
         em.createQuery(sql)
-                .setParameter("canvasId",canvasId)
+                .setParameter("canvasId", canvasId)
                 .executeUpdate();
     }
 
@@ -114,8 +118,63 @@ public class TopoDaoImpl implements TopoDao {
         String sql = "delete from TopoLinkEntity link WHERE (link.fromNodeId =:node and link.fromPortId =:port) or " +
                 "(link.toNodeId =:node and link.toPortId =:port)";
         em.createQuery(sql)
-                .setParameter("node",nodeId)
-                .setParameter("port",port)
+                .setParameter("node", nodeId)
+                .setParameter("port", port)
                 .executeUpdate();
+    }
+
+    @Override
+    @Transactional
+    public TopoCanvasEntity insertTopoCanvas(TopoCanvasEntity canvas) {
+        return em.merge(canvas);
+    }
+
+    @Override
+    @Transactional
+    public TopoBusinessNodeEntity insertTopoBusinessNode(TopoBusinessNodeEntity node) {
+        return em.merge(node);
+    }
+
+    @Override
+    @Transactional
+    public TopoBusinessLinkEntity insertTopoBusinessLink(TopoBusinessLinkEntity link) {
+        return em.merge(link);
+    }
+
+    @Override
+    public TopoCanvasEntity canvasIsExist(String name) {
+        String sql = "From TopoCanvasEntity canvas WHERE canvas.canvasName =:name";
+        List<TopoCanvasEntity> canvas = em.createQuery(sql, TopoCanvasEntity.class)
+                .setParameter("name", name)
+                .getResultList();
+        if (canvas!=null && canvas.size()>0){
+            return canvas.get(0);
+        }else {
+            return null;
+        }
+    }
+
+    @Override
+    public List<TopoBusinessNodeEntity> getAllBusinessNodeByCanvasId(String uuid) {
+        String sql = "FROM TopoBusinessNodeEntity node WHERE node.canvasId =:canvasId";
+        return em.createQuery(sql, TopoBusinessNodeEntity.class)
+                .setParameter("canvasId", uuid)
+                .getResultList();
+    }
+
+    @Override
+    public List<TopoBusinessLinkEntity> getAllBusinessLinkByCanvasId(String uuid) {
+        String sql = "FROM TopoBusinessLinkEntity link WHERE link.canvasId =:canvasId";
+        return em.createQuery(sql, TopoBusinessLinkEntity.class)
+                .setParameter("canvasId", uuid)
+                .getResultList();
+    }
+
+    @Override
+    public List<TopoCanvasEntity> getCanvasByType(String name) {
+        String sql = "From TopoCanvasEntity canvas WHERE canvas.canvasType =:name";
+        return em.createQuery(sql, TopoCanvasEntity.class)
+                .setParameter("name", name)
+                .getResultList();
     }
 }

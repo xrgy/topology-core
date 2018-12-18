@@ -1,6 +1,7 @@
 package com.gy.topologyCore.service.impl;
 
 import com.gy.topologyCore.common.MonitorEnum;
+import com.gy.topologyCore.common.TopoEnum;
 import com.gy.topologyCore.dao.TopoDao;
 import com.gy.topologyCore.entity.*;
 import com.gy.topologyCore.entity.lldp.LldpInfo;
@@ -190,11 +191,90 @@ public class TopoServiceImpl implements TopoService {
     public void getWeaveInfo() {
         WeaveContainerImageCluster imageClusterMap = weaveScopeService.getWeaveInfoFromBusiness();
 
-        imageClusterMap.getNodes();
+        imageClusterMap.getNodes().forEach((clusterId,list)->{
+            //clusterId是canvas的name
+            TopoCanvasEntity canvasIsAlready = dao.canvasIsExist(clusterId);
+            if(null!=canvasIsAlready){
+                String canvasId = canvasIsAlready.getUuid();
+                List<TopoBusinessNodeEntity> existNodeList = dao.getAllBusinessNodeByCanvasId(canvasId);
+                List<String> existNodeUUid= new ArrayList<>();
+                existNodeList.forEach(x->{
+                    existNodeUUid.add(x.getUuid());
+                });
+                Map<String,String> allNameToUuid = new HashMap<>();
+                list.forEach(imageNode->{
+                    allNameToUuid.put(imageNode.getName(),imageNode.getId());
+                    if (!existNodeUUid.contains(imageNode.getId())){
+                        //该节点不在数据库中
+                        TopoBusinessNodeEntity businessNode = new TopoBusinessNodeEntity();
+                        businessNode.setCanvasId(canvasId);
+                        businessNode.setUuid(imageNode.getId());
+                        businessNode.setNodeName(imageNode.getName());
+                        businessNode.setXPoint(10);
+                        businessNode.setYPoint(10);
+                        dao.insertTopoBusinessNode(businessNode);
+                    }
+                });
+                List<TopoBusinessLinkEntity> existLinkList = dao.getAllBusinessLinkByCanvasId(canvasId);
+                List<String> existLink = new ArrayList<>();
+                existLinkList.forEach(x->{
+                    existLink.add(x.getFromNodeId()+";"+x.getToNodeId());
+                });
+                List<String> allLink = new ArrayList<>();
+                list.forEach(imageNode-> {
+                    if (null != imageNode.getAdjacency() && imageNode.getAdjacency().size() > 0) {
+                        imageNode.getAdjacency().forEach(adj -> {
+                            allLink.add(imageNode.getId()+";"+allNameToUuid.get(adj));
+                        });
+                    }
+                });
+                allLink.forEach(x->{
+                    if (!existLink.contains(x)){
+                        //插入新链路
+                        TopoBusinessLinkEntity linkEntity = new TopoBusinessLinkEntity();
+                        linkEntity.setUuid(UUID.randomUUID().toString());
+                        linkEntity.setCanvasId(canvasId);
+                        linkEntity.setFromNodeId(x.split(";")[0]);
+                        linkEntity.setToNodeId(x.split(";")[1]);
+                        dao.insertTopoBusinessLink(linkEntity);
+                    }
+                });
 
+            }else {
+                //不存在 则存储新的canvas 所有的node 所有的link
+                Map<String,String> nameToUuid = new HashMap<>();
+                TopoCanvasEntity canvas = new TopoCanvasEntity();
+                String canvasuuid = UUID.randomUUID().toString();
+                canvas.setUuid(canvasuuid);
+                canvas.setCanvasName(clusterId);
+                canvas.setCanvasType(TopoEnum.CanvasType.CANVAS_BUSINESS.value());
+                dao.insertTopoCanvas(canvas);
+                list.forEach(imageNode->{
+                    nameToUuid.put(imageNode.getName(),imageNode.getId());
+                    TopoBusinessNodeEntity businessNode = new TopoBusinessNodeEntity();
+                    businessNode.setCanvasId(canvasuuid);
+                    businessNode.setUuid(imageNode.getId());
+                    businessNode.setNodeName(imageNode.getName());
+                    businessNode.setXPoint(10);
+                    businessNode.setYPoint(10);
+                    dao.insertTopoBusinessNode(businessNode);
+                });
 
-
-
-
+                list.forEach(imageNode->{
+                    if (null!=imageNode.getAdjacency() && imageNode.getAdjacency().size()>0){
+                        imageNode.getAdjacency().forEach(adj->{
+                            if (nameToUuid.containsKey(adj)){
+                                TopoBusinessLinkEntity linkEntity = new TopoBusinessLinkEntity();
+                                linkEntity.setUuid(UUID.randomUUID().toString());
+                                linkEntity.setCanvasId(canvasuuid);
+                                linkEntity.setFromNodeId(imageNode.getId());
+                                linkEntity.setToNodeId(nameToUuid.get(adj));
+                                dao.insertTopoBusinessLink(linkEntity);
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 }

@@ -33,4 +33,20 @@ public interface TopoDao {
 
     public void removeLinkByNodeAndPort(String nodeId,String port);
 
+    public TopoCanvasEntity insertTopoCanvas(TopoCanvasEntity canvas);
+
+    public TopoBusinessNodeEntity insertTopoBusinessNode(TopoBusinessNodeEntity node);
+
+
+
+    public TopoBusinessLinkEntity insertTopoBusinessLink(TopoBusinessLinkEntity link);
+
+
+    public TopoCanvasEntity canvasIsExist(String uuid);
+
+    public List<TopoBusinessNodeEntity>  getAllBusinessNodeByCanvasId(String uuid);
+
+    public List<TopoBusinessLinkEntity>  getAllBusinessLinkByCanvasId(String uuid);
+
+    public List<TopoCanvasEntity> getCanvasByType(String name);
 }
