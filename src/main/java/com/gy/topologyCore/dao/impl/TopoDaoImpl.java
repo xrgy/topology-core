@@ -177,4 +177,18 @@ public class TopoDaoImpl implements TopoDao {
                 .setParameter("name", name)
                 .getResultList();
     }
+
+    @Override
+    public List<TopoBusinessNodeEntity> getAllWeaveTopoNode() {
+        String sql = "FROM TopoBusinessNodeEntity";
+        return em.createQuery(sql, TopoBusinessNodeEntity.class)
+                .getResultList();
+    }
+
+    @Override
+    public List<TopoBusinessLinkEntity> getAllWeaveTopoLink() {
+        String sql = "FROM TopoBusinessLinkEntity";
+        return em.createQuery(sql, TopoBusinessLinkEntity.class)
+                .getResultList();
+    }
 }

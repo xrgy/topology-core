@@ -1,6 +1,9 @@
 package com.gy.topologyCore.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gy.topologyCore.entity.TestEntity;
+import com.gy.topologyCore.schedule.WeaveScheduleTask;
 import com.gy.topologyCore.service.TopoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +19,9 @@ public class TopoController {
 
     @Autowired
     private TopoService service;
+
+    @Autowired
+    private ObjectMapper mapper;
 
     @RequestMapping("jpa")
     @ResponseBody
@@ -37,6 +43,20 @@ public class TopoController {
     @RequestMapping("getWeaveInfo")
     @ResponseBody
     public void getWeaveInfo(String uuid){
-        service.getWeaveInfo();
+//        service.getWeaveInfo();
+//        WeaveScheduleTask task = new WeaveScheduleTask();
+//        task.scheduleGetWeaveInfo();
+    }
+
+    @RequestMapping("getAllWeaveTopoNode")
+    @ResponseBody
+    public String getAllWeaveTopoNode() throws JsonProcessingException {
+        return mapper.writeValueAsString(service.getAllWeaveTopoNode());
+    }
+
+    @RequestMapping("getAllWeaveTopoLink")
+    @ResponseBody
+    public String getAllWeaveTopoLink() throws JsonProcessingException {
+        return mapper.writeValueAsString(service.getAllWeaveTopoLink());
     }
 }

@@ -16,7 +16,11 @@ import com.gy.topologyCore.service.WeaveScopeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -277,4 +281,16 @@ public class TopoServiceImpl implements TopoService {
             }
         });
     }
+
+    @Override
+    public List<TopoBusinessNodeEntity> getAllWeaveTopoNode() {
+        return dao.getAllWeaveTopoNode();
+    }
+
+    @Override
+    public List<TopoBusinessLinkEntity> getAllWeaveTopoLink() {
+        return dao.getAllWeaveTopoLink();
+    }
+
+
 }
