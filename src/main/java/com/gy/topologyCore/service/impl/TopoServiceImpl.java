@@ -43,7 +43,7 @@ public class TopoServiceImpl implements TopoService {
         return dao.getJPAInfo();
     }
 
-    private String getLocalNodeHashCode(String mac,String name){
+    private String getLocalNodeHashCode(String mac, String name) {
         return mac.concat(name);
     }
 
@@ -87,11 +87,11 @@ public class TopoServiceImpl implements TopoService {
                 }
             });
             //localinfo 做成hashcode
-            HashMap<String,LocalHashNode> hashMapLocalNode = new HashMap<>();
-            lldp.forEach(l->{
+            HashMap<String, LocalHashNode> hashMapLocalNode = new HashMap<>();
+            lldp.forEach(l -> {
                 String ip = l.getIp();
                 String monitId = l.getMonitorUuid();
-                l.getLocalInfos().forEach(local->{
+                l.getLocalInfos().forEach(local -> {
                     LocalHashNode hashNode = new LocalHashNode();
                     hashNode.setIp(ip);
                     hashNode.setMonitorUuid(monitId);
@@ -99,7 +99,7 @@ public class TopoServiceImpl implements TopoService {
                     hashNode.setLocalPortIndex(local.getLocalPortIndex());
                     hashNode.setLocalPortMac(local.getLocalPortMac());
                     //hash
-                    hashMapLocalNode.put(getLocalNodeHashCode(local.getLocalPortMac(),local.getLocalPortName()),hashNode);
+                    hashMapLocalNode.put(getLocalNodeHashCode(local.getLocalPortMac(), local.getLocalPortName()), hashNode);
                 });
             });
 
@@ -107,17 +107,17 @@ public class TopoServiceImpl implements TopoService {
 
             for (int i = 1; i < lldp.size(); i++) {
                 LldpInfo localNode = lldp.get(i);
-                localNode.getRemInfos().forEach(localRem->{
+                localNode.getRemInfos().forEach(localRem -> {
                     String fromNodeMonitorUuid = localNode.getMonitorUuid();
                     String fromNodePort = localNode.getLocalInfos().stream()
-                            .filter(local->local.getLocalPortIndex().equals(localRem.getRemLocalIndex()))
+                            .filter(local -> local.getLocalPortIndex().equals(localRem.getRemLocalIndex()))
                             .findFirst().map(LocalInfo::getLocalPortName).orElse("");
                     String fromNodeId = nodeMonitorMap.get(fromNodeMonitorUuid);
                     List<TopoPortEntity> fromPortList = dao.getAllPortByNodeId(fromNodeId);
-                    Optional<TopoPortEntity> fromPortOpt = fromPortList.stream().filter(x->x.getPort().equals(fromNodePort)).findFirst();
-                    String hashCode = getLocalNodeHashCode(localRem.getRemPortMac(),localRem.getRemPortName());
+                    Optional<TopoPortEntity> fromPortOpt = fromPortList.stream().filter(x -> x.getPort().equals(fromNodePort)).findFirst();
+                    String hashCode = getLocalNodeHashCode(localRem.getRemPortMac(), localRem.getRemPortName());
                     LocalHashNode elseNodeLocal = hashMapLocalNode.get(hashCode);
-                    if (null!=elseNodeLocal){
+                    if (null != elseNodeLocal) {
                         String toNodeMonitorUuid = elseNodeLocal.getMonitorUuid();
                         String toNodePort = elseNodeLocal.getLocalPortName();
                         String toNodeId = nodeMonitorMap.get(toNodeMonitorUuid);
@@ -132,8 +132,8 @@ public class TopoServiceImpl implements TopoService {
                             if (!linkOpt.isPresent()) {
                                 //删除from这条链路
                                 //删除to这条链路
-                                dao.removeLinkByNodeAndPort(fromNodeId,fromPortOpt.get().getUuid());
-                                dao.removeLinkByNodeAndPort(toNodeId,toPortOpt.get().getUuid());
+                                dao.removeLinkByNodeAndPort(fromNodeId, fromPortOpt.get().getUuid());
+                                dao.removeLinkByNodeAndPort(toNodeId, toPortOpt.get().getUuid());
                                 //持久化这条链路
                                 TopoLinkEntity link = new TopoLinkEntity();
                                 link.setUuid(UUID.randomUUID().toString());
@@ -195,20 +195,20 @@ public class TopoServiceImpl implements TopoService {
     public void getWeaveInfo() {
         WeaveContainerImageCluster imageClusterMap = weaveScopeService.getWeaveInfoFromBusiness();
 
-        imageClusterMap.getNodes().forEach((clusterId,list)->{
+        imageClusterMap.getNodes().forEach((clusterId, list) -> {
             //clusterId是canvas的name
             TopoCanvasEntity canvasIsAlready = dao.canvasIsExist(clusterId);
-            if(null!=canvasIsAlready){
+            if (null != canvasIsAlready) {
                 String canvasId = canvasIsAlready.getUuid();
                 List<TopoBusinessNodeEntity> existNodeList = dao.getAllBusinessNodeByCanvasId(canvasId);
-                List<String> existNodeUUid= new ArrayList<>();
-                existNodeList.forEach(x->{
+                List<String> existNodeUUid = new ArrayList<>();
+                existNodeList.forEach(x -> {
                     existNodeUUid.add(x.getUuid());
                 });
-                Map<String,String> allNameToUuid = new HashMap<>();
-                list.forEach(imageNode->{
-                    allNameToUuid.put(imageNode.getName(),imageNode.getId());
-                    if (!existNodeUUid.contains(imageNode.getId())){
+//                Map<String,String> allNameToUuid = new HashMap<>();
+                list.forEach(imageNode -> {
+//                    allNameToUuid.put(imageNode.getName(),imageNode.getId());
+                    if (!existNodeUUid.contains(imageNode.getId())) {
                         //该节点不在数据库中
                         TopoBusinessNodeEntity businessNode = new TopoBusinessNodeEntity();
                         businessNode.setCanvasId(canvasId);
@@ -221,19 +221,19 @@ public class TopoServiceImpl implements TopoService {
                 });
                 List<TopoBusinessLinkEntity> existLinkList = dao.getAllBusinessLinkByCanvasId(canvasId);
                 List<String> existLink = new ArrayList<>();
-                existLinkList.forEach(x->{
-                    existLink.add(x.getFromNodeId()+";"+x.getToNodeId());
+                existLinkList.forEach(x -> {
+                    existLink.add(x.getFromNodeId() + ";" + x.getToNodeId());
                 });
                 List<String> allLink = new ArrayList<>();
-                list.forEach(imageNode-> {
+                list.forEach(imageNode -> {
                     if (null != imageNode.getAdjacency() && imageNode.getAdjacency().size() > 0) {
                         imageNode.getAdjacency().forEach(adj -> {
-                            allLink.add(imageNode.getId()+";"+allNameToUuid.get(adj));
+                            allLink.add(imageNode.getId() + ";" + adj);
                         });
                     }
                 });
-                allLink.forEach(x->{
-                    if (!existLink.contains(x)){
+                allLink.forEach(x -> {
+                    if (!existLink.contains(x)) {
                         //插入新链路
                         TopoBusinessLinkEntity linkEntity = new TopoBusinessLinkEntity();
                         linkEntity.setUuid(UUID.randomUUID().toString());
@@ -244,17 +244,17 @@ public class TopoServiceImpl implements TopoService {
                     }
                 });
 
-            }else {
+            } else {
                 //不存在 则存储新的canvas 所有的node 所有的link
-                Map<String,String> nameToUuid = new HashMap<>();
+//                Map<String,String> nameToUuid = new HashMap<>();
                 TopoCanvasEntity canvas = new TopoCanvasEntity();
                 String canvasuuid = UUID.randomUUID().toString();
                 canvas.setUuid(canvasuuid);
                 canvas.setCanvasName(clusterId);
                 canvas.setCanvasType(TopoEnum.CanvasType.CANVAS_BUSINESS.value());
                 dao.insertTopoCanvas(canvas);
-                list.forEach(imageNode->{
-                    nameToUuid.put(imageNode.getName(),imageNode.getId());
+                list.forEach(imageNode -> {
+//                    nameToUuid.put(imageNode.getName(),imageNode.getId());
                     TopoBusinessNodeEntity businessNode = new TopoBusinessNodeEntity();
                     businessNode.setCanvasId(canvasuuid);
                     businessNode.setUuid(imageNode.getId());
@@ -263,18 +263,15 @@ public class TopoServiceImpl implements TopoService {
                     businessNode.setYPoint(10);
                     dao.insertTopoBusinessNode(businessNode);
                 });
-
-                list.forEach(imageNode->{
-                    if (null!=imageNode.getAdjacency() && imageNode.getAdjacency().size()>0){
-                        imageNode.getAdjacency().forEach(adj->{
-                            if (nameToUuid.containsKey(adj)){
-                                TopoBusinessLinkEntity linkEntity = new TopoBusinessLinkEntity();
-                                linkEntity.setUuid(UUID.randomUUID().toString());
-                                linkEntity.setCanvasId(canvasuuid);
-                                linkEntity.setFromNodeId(imageNode.getId());
-                                linkEntity.setToNodeId(nameToUuid.get(adj));
-                                dao.insertTopoBusinessLink(linkEntity);
-                            }
+                list.forEach(imageNode -> {
+                    if (null != imageNode.getAdjacency() && imageNode.getAdjacency().size() > 0) {
+                        imageNode.getAdjacency().forEach(adj -> {
+                            TopoBusinessLinkEntity linkEntity = new TopoBusinessLinkEntity();
+                            linkEntity.setUuid(UUID.randomUUID().toString());
+                            linkEntity.setCanvasId(canvasuuid);
+                            linkEntity.setFromNodeId(imageNode.getId());
+                            linkEntity.setToNodeId(adj);
+                            dao.insertTopoBusinessLink(linkEntity);
                         });
                     }
                 });
