@@ -14,11 +14,21 @@ ENV PATH $PATH:$JAVA_HOME/bin
 #ENV PATH $PATH:$JAVA_HOME/bin:$CATALINA_HOME/lib:$CATALINA_HOME/bin
 #ADD portal-1.0.war /usr/local/apache-tomcat-8.5.34/webapps
 COPY lib /lib
-ADD portal-1.0.jar /portal.jar
+ADD topology-core-1.0.jar /topology-core.jar
 #RUN apt-get -y install wget git unzip
 #RUN unzip portal-1.0.jar -d /portal
 
-EXPOSE 8082
+EXPOSE 8085
 #CMD /usr/local/apache-tomcat-8.5.34/bin/catalina.sh run
 #CMD ["--spring.config.location=/config/application.properties"] jar包没有解压成功，所以/config目录没用
-ENTRYPOINT ["java","-jar","/portal.jar"]
+EXPOSE 30010
+
+ENTRYPOINT ["java",\
+            "-Djava.rmi.server.hostname=47.94.157.199",\
+            "-Dcom.sun.management.jmxremote=true",\
+            "-Dcom.sun.management.jmxremote.port=30010",\
+            "-Dcom.sun.management.jmxremote.rmi.port=30010",\
+            "-Dcom.sun.management.jmxremote.ssl=false",\
+            "-Dcom.sun.management.jmxremote.authenticate=false",\
+            "-Dcom.sun.management.jmxremote.local.only=false",\
+            "-jar","/topology-core.jar"]

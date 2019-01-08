@@ -91,7 +91,7 @@ public class ProperUtil {
 
             String dbEndpoint =System.getenv("DB_ENDPOINT");
 
-//            String []str =dbEndpoint.split(":");
+            String []str =dbEndpoint.split(":");
             String dbName =System.getenv("DATABASE_NAME");
 
 //            String ip = getClusterIpByServiceName(str[0]);

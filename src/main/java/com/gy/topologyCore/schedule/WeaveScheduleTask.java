@@ -28,7 +28,7 @@ public class WeaveScheduleTask {
         serviceSchedule.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                topoService.getWeaveInfo();
+//                topoService.getWeaveInfo();
             }
         }, 20, 10, TimeUnit.SECONDS);
 
