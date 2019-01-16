@@ -1,14 +1,11 @@
 package com.gy.topologyCore.service.impl;
 
-import com.gy.topologyCore.common.MonitorEnum;
 import com.gy.topologyCore.common.TopoEnum;
 import com.gy.topologyCore.dao.TopoDao;
 import com.gy.topologyCore.entity.*;
 import com.gy.topologyCore.entity.lldp.LldpInfo;
 import com.gy.topologyCore.entity.lldp.LocalHashNode;
 import com.gy.topologyCore.entity.lldp.LocalInfo;
-import com.gy.topologyCore.entity.monitor.LightTypeEntity;
-import com.gy.topologyCore.entity.monitor.MiddleTypeEntity;
 import com.gy.topologyCore.entity.weave.WeaveContainerImageCluster;
 import com.gy.topologyCore.service.MonitorService;
 import com.gy.topologyCore.service.TopoService;
@@ -16,11 +13,7 @@ import com.gy.topologyCore.service.WeaveScopeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -49,16 +42,11 @@ public class TopoServiceImpl implements TopoService {
 
     @Override
     public void getLldpInfo() {
-        List<MiddleTypeEntity> middleTypeList = monitorService.getMiddleTypeEntity();
-        List<LightTypeEntity> lightTypeList = monitorService.getLightTypeEntity();
-        Optional<MiddleTypeEntity> networkMiddle = middleTypeList.stream()
-                .filter(midlle -> midlle.getName().equals(MonitorEnum.MonitorType.NETWORK_DEVICE.name())).findFirst();
-        String middleUuid = networkMiddle.map(MiddleTypeEntity::getUuid).orElse("");
         TopoCanvasEntity canvas = dao.getWholeTopoCanvas();
         //删除画布所有的链路
         dao.deleteLinkByCanvasId(canvas.getUuid());
         List<TopoNodeEntity> nodeEntityList = dao.getAllNodeByCanvasId(canvas.getUuid());
-        monitorService.getExporterLldpInfo(middleUuid).thenAccept(lldpInfos -> {
+        monitorService.getExporterLldpInfo().thenAccept(lldpInfos -> {
             Map<String, String> nodeMonitorMap = new HashMap<>();
             List<LldpInfo> lldp = lldpInfos.getLldpInfos();
             lldp.forEach(node -> {
@@ -74,11 +62,9 @@ public class TopoServiceImpl implements TopoService {
                     insertNode.setMonitorUuid(node.getMonitorUuid());
                     insertNode.setXPoint(100);
                     insertNode.setYPoint(100);
-                    monitorService.getOperationMonitorEntity(node.getMonitorUuid()).thenApply(operationMonitorEntity -> {
+                    monitorService.getNetworkMonitorEntity(node.getMonitorUuid()).thenApply(operationMonitorEntity -> {
                         insertNode.setNodeName(operationMonitorEntity.getName());
-                        insertNode.setNodeType(lightTypeList.stream()
-                                .filter(light -> light.getUuid().equals(operationMonitorEntity.getLightTypeId())).findFirst()
-                                .map(LightTypeEntity::getName).orElse(""));
+                        insertNode.setNodeType(operationMonitorEntity.getLightType());
                         return insertNode;
                     }).thenAccept(inserNode -> {
                         TopoNodeEntity nodeExist = dao.insertTopoNode(inserNode);
