@@ -275,5 +275,25 @@ public class TopoServiceImpl implements TopoService {
         return dao.getAllWeaveTopoLink();
     }
 
+    @Override
+    public List<TopoNodeEntity> getTopoNodeByCanvasId(String canvasId) {
+        return dao.getAllNodeByCanvasId(canvasId);
+    }
+
+    @Override
+    public List<TopoLinkEntity> getTopoLinkByCanvasId(String canvasId) {
+        return dao.getAllLinkByCanvasId(canvasId);
+    }
+
+    @Override
+    public List<TopoCanvasEntity> getCanvasByType(String name) {
+        return dao.getCanvasByType(name);
+    }
+
+    @Override
+    public List<TopoPortEntity> getAllPorts() {
+        return dao.getAllPorts();
+    }
+
 
 }

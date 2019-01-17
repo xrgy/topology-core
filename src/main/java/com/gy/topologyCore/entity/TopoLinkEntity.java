@@ -25,15 +25,10 @@ public class TopoLinkEntity {
     @Column(name = "canvas_id")
     String canvasId;
 
-    @Column(name = "fromNode_id")
-    String fromNodeId;
-
-    @Column(name = "toNode_id")
-    String toNodeId;
-
-    @Column(name = "fromPort_id")
+    @Column(name = "fromport_id")
     String fromPortId;
 
-    @Column(name = "toPort_id")
+    @Column(name = "toport_id")
     String toPortId;
+
 }

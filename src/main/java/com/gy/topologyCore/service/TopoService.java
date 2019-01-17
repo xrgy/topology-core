@@ -1,8 +1,6 @@
 package com.gy.topologyCore.service;
 
-import com.gy.topologyCore.entity.TestEntity;
-import com.gy.topologyCore.entity.TopoBusinessLinkEntity;
-import com.gy.topologyCore.entity.TopoBusinessNodeEntity;
+import com.gy.topologyCore.entity.*;
 
 import java.util.List;
 
@@ -21,4 +19,12 @@ public interface TopoService {
     List<TopoBusinessNodeEntity> getAllWeaveTopoNode();
 
     List<TopoBusinessLinkEntity> getAllWeaveTopoLink();
+
+    List<TopoNodeEntity> getTopoNodeByCanvasId(String canvasId);
+
+    List<TopoLinkEntity> getTopoLinkByCanvasId(String canvasId);
+
+    List<TopoCanvasEntity> getCanvasByType(String name);
+
+    public List<TopoPortEntity> getAllPorts();
 }

@@ -29,6 +29,8 @@ public interface TopoDao {
 
     public List<TopoPortEntity>  getAllPortByNodeId(String uuid);
 
+    public List<TopoPortEntity> getAllPorts();
+
     public void deleteLinkByCanvasId(String canvasId);
 
     public void removeLinkByNodeAndPort(String nodeId,String port);
@@ -54,4 +56,5 @@ public interface TopoDao {
     List<TopoBusinessNodeEntity> getAllWeaveTopoNode();
 
     List<TopoBusinessLinkEntity> getAllWeaveTopoLink();
+
 }

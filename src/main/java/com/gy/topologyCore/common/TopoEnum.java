@@ -7,7 +7,11 @@ public interface TopoEnum {
 
    public enum CanvasType{
 
-       CANVAS_BUSINESS("business");
+       CANVAS_BUSINESS("business"),
+
+       CANVAS_WHOLE_TOPO("wholetopo"),
+
+       CANVAS_CUSTOM_TOPO("customtopo");
 
        private String value;
 

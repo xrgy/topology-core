@@ -104,6 +104,12 @@ public class TopoDaoImpl implements TopoDao {
                 .setParameter("nodeId", uuid)
                 .getResultList();
     }
+    @Override
+    public List<TopoPortEntity> getAllPorts() {
+        String sql = "FROM TopoPortEntity";
+        return em.createQuery(sql, TopoPortEntity.class)
+                .getResultList();
+    }
 
     @Override
     public void deleteLinkByCanvasId(String canvasId) {
