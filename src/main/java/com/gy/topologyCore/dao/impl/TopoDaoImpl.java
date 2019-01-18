@@ -120,13 +120,22 @@ public class TopoDaoImpl implements TopoDao {
     }
 
     @Override
-    public void removeLinkByNodeAndPort(String nodeId, String port) {
-        String sql = "delete from TopoLinkEntity link WHERE (link.fromNodeId =:node and link.fromPortId =:port) or " +
-                "(link.toNodeId =:node and link.toPortId =:port)";
-        em.createQuery(sql)
-                .setParameter("node", nodeId)
+    public boolean deleteTopoLinkByPort(String port) {
+        String sql = "delete from TopoLinkEntity link WHERE link.fromPortId =:port or " +
+                " link.toPortId =:port";
+        int res =em.createQuery(sql)
                 .setParameter("port", port)
                 .executeUpdate();
+        return res > 0;
+    }
+
+    @Override
+    public boolean deleteTopoPortByNodeUuid(String uuid) {
+        String sql = "delete from TopoPortEntity port WHERE port.nodeUuid =:uuid";
+        int res =em.createQuery(sql)
+                .setParameter("uuid", uuid)
+                .executeUpdate();
+        return res > 0;
     }
 
     @Override
@@ -195,6 +204,23 @@ public class TopoDaoImpl implements TopoDao {
     public List<TopoBusinessLinkEntity> getAllWeaveTopoLink() {
         String sql = "FROM TopoBusinessLinkEntity";
         return em.createQuery(sql, TopoBusinessLinkEntity.class)
+                .getResultList();
+    }
+
+    @Override
+    public boolean deleteTopoNodeBymonitoruuid(String monitorUuid) {
+        String sql = "DELETE FROM TopoNodeEntity WHERE monitorUuid =:monitorUuid";
+        int res = em.createQuery(sql)
+                .setParameter("monitorUuid", monitorUuid)
+                .executeUpdate();
+        return res > 0;
+    }
+
+    @Override
+    public List<TopoNodeEntity> getTopoNodeBymonitoruuid(String monitorUuid) {
+        String sql = "FROM TopoNodeEntity node WHERE node.monitorUuid =:monitorUuid";
+        return em.createQuery(sql, TopoNodeEntity.class)
+                .setParameter("monitorUuid", monitorUuid)
                 .getResultList();
     }
 }

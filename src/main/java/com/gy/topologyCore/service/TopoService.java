@@ -27,4 +27,11 @@ public interface TopoService {
     List<TopoCanvasEntity> getCanvasByType(String name);
 
     public List<TopoPortEntity> getAllPorts();
+
+    /**
+     * 删除监控记录时候需要级联删除拓扑中的设备
+     * @param monitorUuid
+     * @return
+     */
+    boolean deleteTopoResourceBymonitoruuid(String monitorUuid);
 }

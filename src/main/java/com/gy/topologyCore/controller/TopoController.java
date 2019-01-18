@@ -88,4 +88,12 @@ public class TopoController {
     public String getAllPorts() throws JsonProcessingException {
         return mapper.writeValueAsString(service.getAllPorts());
     }
+
+
+    //调用拓扑的deleteBymonitoruuid
+    @RequestMapping("deleteTopoResourceBymonitoruuid")
+    @ResponseBody
+    public boolean deleteTopoResourceBymonitoruuid(String monitorUuid) throws JsonProcessingException {
+        return service.deleteTopoResourceBymonitoruuid(monitorUuid);
+    }
 }

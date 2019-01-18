@@ -295,5 +295,24 @@ public class TopoServiceImpl implements TopoService {
         return dao.getAllPorts();
     }
 
+    @Override
+    public boolean deleteTopoResourceBymonitoruuid(String monitorUuid) {
+
+        //通过node找到端口
+        //删除以该端口为链路源和目的的链路
+        //删除端口
+        //删除node
+        List<TopoNodeEntity> nodes = dao.getTopoNodeBymonitoruuid(monitorUuid);
+        nodes.forEach(node->{
+            List<TopoPortEntity> ports = dao.getAllPortByNodeId(node.getUuid());
+            ports.forEach(port->{
+                dao.deleteTopoLinkByPort(port.getUuid());
+            });
+            dao.deleteTopoPortByNodeUuid(node.getUuid());
+        });
+
+        return dao.deleteTopoNodeBymonitoruuid(monitorUuid);
+    }
+
 
 }

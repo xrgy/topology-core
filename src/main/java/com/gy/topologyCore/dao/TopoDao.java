@@ -33,7 +33,7 @@ public interface TopoDao {
 
     public void deleteLinkByCanvasId(String canvasId);
 
-    public void removeLinkByNodeAndPort(String nodeId,String port);
+//    public void removeLinkByNodeAndPort(String nodeId,String port);
 
     public TopoCanvasEntity insertTopoCanvas(TopoCanvasEntity canvas);
 
@@ -57,4 +57,21 @@ public interface TopoDao {
 
     List<TopoBusinessLinkEntity> getAllWeaveTopoLink();
 
+    /**
+     * 删除监控设备需要级联删除拓扑中的设备
+     * @param monitorUuid
+     * @return
+     */
+    boolean deleteTopoNodeBymonitoruuid(String monitorUuid);
+
+    /**
+     * 通过monitoruuid获取nodeid
+     * @param monitorUuid
+     * @return
+     */
+    List<TopoNodeEntity> getTopoNodeBymonitoruuid(String monitorUuid);
+
+    boolean deleteTopoLinkByPort(String uuid);
+
+    boolean deleteTopoPortByNodeUuid(String uuid);
 }
