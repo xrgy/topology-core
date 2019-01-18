@@ -1,4 +1,4 @@
-package com.gy.topologyCore.entity.lldp;
+package com.gy.topologyCore.entity.snmp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

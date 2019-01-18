@@ -3,9 +3,7 @@ package com.gy.topologyCore.service.impl;
 import com.gy.topologyCore.common.TopoEnum;
 import com.gy.topologyCore.dao.TopoDao;
 import com.gy.topologyCore.entity.*;
-import com.gy.topologyCore.entity.lldp.LldpInfo;
-import com.gy.topologyCore.entity.lldp.LocalHashNode;
-import com.gy.topologyCore.entity.lldp.LocalInfo;
+import com.gy.topologyCore.entity.snmp.*;
 import com.gy.topologyCore.entity.weave.WeaveContainerImageCluster;
 import com.gy.topologyCore.service.MonitorService;
 import com.gy.topologyCore.service.TopoService;
@@ -13,6 +11,7 @@ import com.gy.topologyCore.service.WeaveScopeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -303,15 +302,117 @@ public class TopoServiceImpl implements TopoService {
         //删除端口
         //删除node
         List<TopoNodeEntity> nodes = dao.getTopoNodeBymonitoruuid(monitorUuid);
-        nodes.forEach(node->{
+        nodes.forEach(node -> {
             List<TopoPortEntity> ports = dao.getAllPortByNodeId(node.getUuid());
-            ports.forEach(port->{
+            ports.forEach(port -> {
                 dao.deleteTopoLinkByPort(port.getUuid());
             });
             dao.deleteTopoPortByNodeUuid(node.getUuid());
         });
 
         return dao.deleteTopoNodeBymonitoruuid(monitorUuid);
+    }
+
+    @Override
+    public List<TopoLinkRateView> getCanvasLinkRate(String canvasId, String linkRate) {
+        List<TopoLinkEntity> linkList = dao.getAllLinkByCanvasId(canvasId);
+        List<TopoNodeEntity> nodeList = dao.getAllNodeByCanvasId(canvasId);
+        Map<String, TopoNodeEntity> portToNode = new HashMap<>();
+        Map<String, TopoPortEntity> portMap = new HashMap<>();
+        nodeList.forEach(x -> {
+            List<TopoPortEntity> portList = dao.getAllPortByNodeId(x.getUuid());
+            portList.forEach(y -> {
+                portMap.put(y.getUuid(), y);
+                portToNode.put(y.getUuid(), x);
+            });
+        });
+
+
+        List<TopoLinkRateView> view = new ArrayList<>();
+        //先弄一个portid和nodeid的map
+        linkList.forEach(link -> {
+            String fromportId = link.getFromPortId();
+            String toPortId = link.getToPortId();
+            TopoPortEntity fromPort = null;
+            TopoPortEntity toPort = null;
+            if (portToNode.containsKey(fromportId) && portToNode.containsKey(toPortId)) {
+                TopoNodeEntity fromNode = portToNode.get(fromportId);
+                TopoNodeEntity toNode = portToNode.get(toPortId);
+                String fromNodeId = fromNode.getUuid();
+                String toNodeId = toNode.getUuid();
+                Optional<DeviceInterface> fromInterface = Optional.empty();
+                Optional<DeviceInterface> toInterface = Optional.empty();
+                if (portMap.containsKey(fromportId)) {
+                    InterfaceInfo fromInterfaceInfo = monitorService.getExporterInterfaceInfo(fromNode.getMonitorUuid());
+                    fromPort = portMap.get(fromportId);
+                    fromInterface = fromInterfaceInfo.getInterfaces().stream().filter(x -> x.getDescr().equals(fromPort.getPort())).findFirst();
+                }
+                if (portMap.containsKey(toPortId)) {
+                    InterfaceInfo toInterfaceInfo = monitorService.getExporterInterfaceInfo(toNode.getMonitorUuid());
+                    toPort = portMap.get(toPortId);
+                    toInterface = toInterfaceInfo.getInterfaces().stream().filter(x -> x.getDescr().equals(toPort.getPort())).findFirst();
+                }
+                if (fromInterface.isPresent() && toInterface.isPresent()){
+                    TopoLinkRateView linkRateView = new TopoLinkRateView();
+                    linkRateView.setUuid(link.getUuid());
+                    if (fromInterface.get().getOperStatus().equals("1") && toInterface.get().getOperStatus().equals("1")){
+                        //同时正常 才可获取流量
+                        linkRateView.setLinkStatus("1");
+                        QuotaInfo fromquotaInfo = null;
+                        QuotaInfo toquotaInfo = null;
+                        if (linkRate.equals("in")){
+                            //进速率
+                            fromquotaInfo = monitorService.getInterfaceRate(fromNode.getMonitorUuid(),TopoEnum.QuoatName.IN_OCTETS_RATE.value());
+                            toquotaInfo = monitorService.getInterfaceRate(toNode.getMonitorUuid(),TopoEnum.QuoatName.IN_OCTETS_RATE.value());
+                        }else if (linkRate.equals("out")){
+                            //出速率
+                            fromquotaInfo = monitorService.getInterfaceRate(fromNode.getMonitorUuid(),TopoEnum.QuoatName.OUT_OCTETS_RATE.value());
+                            toquotaInfo = monitorService.getInterfaceRate(toNode.getMonitorUuid(),TopoEnum.QuoatName.OUT_OCTETS_RATE.value());
+                        }
+                        QuotaItemInfo fromiteminfo = fromquotaInfo.getItemInfo();
+                        QuotaItemInfo toiteminfo = toquotaInfo.getItemInfo();
+                        Optional<QuotaItemData> fromdata = Optional.empty();
+                        Optional<QuotaItemData> todata = Optional.empty();
+                        if (fromiteminfo!=null){
+                            TopoPortEntity finalFromPort = fromPort;
+                            fromdata =fromiteminfo.getItemData().stream().filter(x->x.getName().equals(finalFromPort.getPort())).findFirst();
+                        }
+                        if (toiteminfo!=null){
+                            TopoPortEntity finalToPort = toPort;
+                            todata =toiteminfo.getItemData().stream().filter(x->x.getName().equals(finalToPort.getPort())).findFirst();
+                        }
+                        if (fromdata.isPresent()){
+                            linkRateView.setFormNodeRate(str2float2(fromdata.get().getValue()));
+                        }
+                        if (todata.isPresent()){
+                            linkRateView.setToNodeRate(str2float2(todata.get().getValue()));
+                        }
+
+                    }else {
+                        linkRateView.setLinkStatus("0");
+                    }
+                    view.add(linkRateView);
+                }
+            }
+
+        });
+
+        return view;
+    }
+
+
+    /**
+     * 将str转为float保留两位小数
+     * @param str
+     * @return
+     */
+    private String str2float2(String str) {
+        Double d = Double.parseDouble(str);
+        BigDecimal b = new BigDecimal(d);
+//        float df = b.setScale(2, BigDecimal.ROUND_HALF_UP).floatValue();
+        double df = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+
+        return String.valueOf(df);
     }
 
 

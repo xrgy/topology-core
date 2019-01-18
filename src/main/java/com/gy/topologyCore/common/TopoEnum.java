@@ -22,4 +22,21 @@ public interface TopoEnum {
            return this.value;
        }
    }
+
+    public enum QuoatName{
+
+        IN_OCTETS_RATE("ifInOctetsRate"),
+
+        OUT_OCTETS_RATE("ifOutOctetsRate");
+
+
+        private String value;
+
+        QuoatName(String name) {
+            this.value = name;
+        }
+        public String value() {
+            return this.value;
+        }
+    }
 }

@@ -1,7 +1,9 @@
 package com.gy.topologyCore.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gy.topologyCore.entity.lldp.LldpInfos;
+import com.gy.topologyCore.entity.QuotaInfo;
+import com.gy.topologyCore.entity.snmp.InterfaceInfo;
+import com.gy.topologyCore.entity.snmp.LldpInfos;
 import com.gy.topologyCore.entity.monitor.NetworkMonitorEntity;
 import com.gy.topologyCore.service.MonitorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,8 @@ public class MonitorServiceImpl implements MonitorService {
     private String PREFIX = "monitor";
     private String PATH_NETWORK_MONITOR_RECORD = "getNetworkMonitorRecord";
     private String PATH_LLDP_INFO = "getExporterLldpInfo";
+    private String PATH_DEVICE_INTERFACE_INFO = "getExporterInterfaceInfo";
+    private String PATH_DEVICE_INTERFACE_RATE = "getInterfaceRate";
     private static final String HTTP="http://";
 
 
@@ -86,6 +90,28 @@ public class MonitorServiceImpl implements MonitorService {
             return null;
         });
 
+    }
+
+    @Override
+    public InterfaceInfo getExporterInterfaceInfo(String monitoruuid) {
+        ResponseEntity<String> response = rest().getForEntity(monitorPrefix()+PATH_DEVICE_INTERFACE_INFO+"?monitorUuid={1}",String.class,monitoruuid);
+        try {
+            return mapper.readValue(response.getBody(),InterfaceInfo.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public QuotaInfo getInterfaceRate(String monitorUuid, String quotaName) {
+        ResponseEntity<String> response = rest().getForEntity(monitorPrefix()+PATH_DEVICE_INTERFACE_RATE+"?monitorUuid={1}&quotaName={2}",String.class,monitorUuid,quotaName);
+        try {
+            return mapper.readValue(response.getBody(),QuotaInfo.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 //    @Override

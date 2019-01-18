@@ -2,10 +2,7 @@ package com.gy.topologyCore.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gy.topologyCore.entity.TestEntity;
-import com.gy.topologyCore.entity.TopoCanvasEntity;
-import com.gy.topologyCore.entity.TopoNodeEntity;
-import com.gy.topologyCore.entity.TopoPortEntity;
+import com.gy.topologyCore.entity.*;
 import com.gy.topologyCore.schedule.WeaveScheduleTask;
 import com.gy.topologyCore.service.TopoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,5 +92,11 @@ public class TopoController {
     @ResponseBody
     public boolean deleteTopoResourceBymonitoruuid(String monitorUuid) throws JsonProcessingException {
         return service.deleteTopoResourceBymonitoruuid(monitorUuid);
+    }
+
+    @RequestMapping("getCanvasLinkRate")
+    @ResponseBody
+    public String getCanvasLinkRate(String canvasId, String linkRate) throws JsonProcessingException {
+        return mapper.writeValueAsString(service.getCanvasLinkRate(canvasId,linkRate));
     }
 }

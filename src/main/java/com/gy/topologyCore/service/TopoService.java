@@ -34,4 +34,13 @@ public interface TopoService {
      * @return
      */
     boolean deleteTopoResourceBymonitoruuid(String monitorUuid);
+
+
+    /**
+     * 获取画布链路流量信息
+     * @param canvasId
+     * @param linkRate
+     * @return
+     */
+    List<TopoLinkRateView> getCanvasLinkRate(String canvasId,String linkRate);
 }

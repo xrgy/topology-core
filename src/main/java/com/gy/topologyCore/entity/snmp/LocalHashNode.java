@@ -1,4 +1,4 @@
-package com.gy.topologyCore.entity.lldp;
+package com.gy.topologyCore.entity.snmp;
 
 import lombok.Getter;
 import lombok.Setter;
