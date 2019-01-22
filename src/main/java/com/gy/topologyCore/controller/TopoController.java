@@ -1,15 +1,18 @@
 package com.gy.topologyCore.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gy.topologyCore.entity.*;
 import com.gy.topologyCore.schedule.WeaveScheduleTask;
 import com.gy.topologyCore.service.TopoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -98,5 +101,12 @@ public class TopoController {
     @ResponseBody
     public String getCanvasLinkRate(String canvasId, String linkRate) throws JsonProcessingException {
         return mapper.writeValueAsString(service.getCanvasLinkRate(canvasId,linkRate));
+    }
+
+    @RequestMapping("insertTopoNodeList")
+    @ResponseBody
+    public boolean insertTopoNodeList(@RequestBody String data) throws IOException {
+        List<TopoNodeEntity> nodes = mapper.readValue(data,new TypeReference<List<TopoNodeEntity>>(){});
+        return service.insertTopoNodeList(nodes);
     }
 }

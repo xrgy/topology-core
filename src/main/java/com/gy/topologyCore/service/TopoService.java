@@ -43,4 +43,12 @@ public interface TopoService {
      * @return
      */
     List<TopoLinkRateView> getCanvasLinkRate(String canvasId,String linkRate);
+
+
+    /**
+     * 保存节点列表
+     * @param nodes
+     * @return
+     */
+    boolean insertTopoNodeList(List<TopoNodeEntity> nodes);
 }
