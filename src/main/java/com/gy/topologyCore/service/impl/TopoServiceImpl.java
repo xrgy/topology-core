@@ -382,10 +382,10 @@ public class TopoServiceImpl implements TopoService {
                             todata =toiteminfo.getItemData().stream().filter(x->x.getName().equals(finalToPort.getPort())).findFirst();
                         }
                         if (fromdata.isPresent()){
-                            linkRateView.setFormNodeRate(str2float2(fromdata.get().getValue()));
+                            linkRateView.setFormNodeRate(kpbs2Mbps(fromdata.get().getValue()));
                         }
                         if (todata.isPresent()){
-                            linkRateView.setToNodeRate(str2float2(todata.get().getValue()));
+                            linkRateView.setToNodeRate(kpbs2Mbps(todata.get().getValue()));
                         }
 
                     }else {
@@ -421,6 +421,19 @@ public class TopoServiceImpl implements TopoService {
         double df = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 
         return String.valueOf(df);
+    }
+
+    private String kpbs2Mbps(String str){
+        Double d = Double.parseDouble(str);
+        if (d>1024){
+            Double t = d/1024;
+            BigDecimal b = new BigDecimal(t);
+            double df = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+            return String.valueOf(df)+"Mbps";
+        }else {
+            return str+"Kbps";
+        }
+
     }
 
 
