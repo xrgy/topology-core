@@ -16,9 +16,14 @@ public interface TopoService {
 
 //    void scheduleGetWeaveInfo();
 
-    List<TopoBusinessNodeEntity> getAllWeaveTopoNode();
+    List<TopoBusinessNodeEntity> getAllWeaveTopoNode(String relUuid);
 
-    List<TopoBusinessLinkEntity> getAllWeaveTopoLink();
+    /**
+     *
+     * @param relUuid linkuuid
+     * @return
+     */
+    List<TopoBusinessLinkEntity> getAllWeaveTopoLink(String relUuid);
 
     List<TopoNodeEntity> getTopoNodeByCanvasId(String canvasId);
 
@@ -51,4 +56,19 @@ public interface TopoService {
      * @return
      */
     boolean insertTopoNodeList(List<TopoNodeEntity> nodes);
+
+    /**
+     * 获取business topo node
+     * @param uuid
+     * @return
+     */
+    TopoBusinessNodeEntity getBusinessNodeByUuid(String uuid);
+
+
+    /**
+     * 获取topo canvas
+     * @param uuid
+     * @return
+     */
+    TopoCanvasEntity getCanvasByUuid(String uuid);
 }

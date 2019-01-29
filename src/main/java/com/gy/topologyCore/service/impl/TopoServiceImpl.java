@@ -109,7 +109,7 @@ public class TopoServiceImpl implements TopoService {
                         List<TopoPortEntity> toPortList = dao.getAllPortByNodeId(toNodeId);
                         Optional<TopoPortEntity> toPortOpt = toPortList.stream().filter(x -> x.getPort().equals(toNodePort)).findFirst();
                         if (fromPortOpt.isPresent() && toPortOpt.isPresent()) {
-                            Optional<TopoLinkEntity> linkOpt = linkEntityList.stream().filter(link -> ( link.getFromPortId().equals(fromPortOpt.get().getUuid())
+                            Optional<TopoLinkEntity> linkOpt = linkEntityList.stream().filter(link -> (link.getFromPortId().equals(fromPortOpt.get().getUuid())
                                     && link.getToPortId().equals(toPortOpt.get().getUuid())) || (link.getFromPortId().equals(toPortOpt.get().getUuid())
                                     && link.getToPortId().equals(fromPortOpt.get().getUuid()))).findFirst();
                             if (!linkOpt.isPresent()) {
@@ -263,13 +263,13 @@ public class TopoServiceImpl implements TopoService {
     }
 
     @Override
-    public List<TopoBusinessNodeEntity> getAllWeaveTopoNode() {
-        return dao.getAllWeaveTopoNode();
+    public List<TopoBusinessNodeEntity> getAllWeaveTopoNode(String canvasId) {
+        return dao.getAllBusinessNodeByCanvasId(canvasId);
     }
 
     @Override
-    public List<TopoBusinessLinkEntity> getAllWeaveTopoLink() {
-        return dao.getAllWeaveTopoLink();
+    public List<TopoBusinessLinkEntity> getAllWeaveTopoLink(String canvasId) {
+        return dao.getAllBusinessLinkByCanvasId(canvasId);
     }
 
     @Override
@@ -352,43 +352,43 @@ public class TopoServiceImpl implements TopoService {
                     TopoPortEntity finalToPort1 = toPort;
                     toInterface = toInterfaceInfo.getInterfaces().stream().filter(x -> x.getDescr().equals(finalToPort1.getPort())).findFirst();
                 }
-                if (fromInterface.isPresent() && toInterface.isPresent()){
+                if (fromInterface.isPresent() && toInterface.isPresent()) {
                     TopoLinkRateView linkRateView = new TopoLinkRateView();
                     linkRateView.setUuid(link.getUuid());
-                    if (fromInterface.get().getOperStatus().equals("1") && toInterface.get().getOperStatus().equals("1")){
+                    if (fromInterface.get().getOperStatus().equals("1") && toInterface.get().getOperStatus().equals("1")) {
                         //同时正常 才可获取流量
                         linkRateView.setLinkStatus("1");
                         QuotaInfo fromquotaInfo = null;
                         QuotaInfo toquotaInfo = null;
-                        if (linkRate.equals("in")){
+                        if (linkRate.equals("in")) {
                             //进速率
-                            fromquotaInfo = monitorService.getInterfaceRate(fromNode.getMonitorUuid(),TopoEnum.QuoatName.IN_OCTETS_RATE.value());
-                            toquotaInfo = monitorService.getInterfaceRate(toNode.getMonitorUuid(),TopoEnum.QuoatName.IN_OCTETS_RATE.value());
-                        }else if (linkRate.equals("out")){
+                            fromquotaInfo = monitorService.getInterfaceRate(fromNode.getMonitorUuid(), TopoEnum.QuoatName.IN_OCTETS_RATE.value());
+                            toquotaInfo = monitorService.getInterfaceRate(toNode.getMonitorUuid(), TopoEnum.QuoatName.IN_OCTETS_RATE.value());
+                        } else if (linkRate.equals("out")) {
                             //出速率
-                            fromquotaInfo = monitorService.getInterfaceRate(fromNode.getMonitorUuid(),TopoEnum.QuoatName.OUT_OCTETS_RATE.value());
-                            toquotaInfo = monitorService.getInterfaceRate(toNode.getMonitorUuid(),TopoEnum.QuoatName.OUT_OCTETS_RATE.value());
+                            fromquotaInfo = monitorService.getInterfaceRate(fromNode.getMonitorUuid(), TopoEnum.QuoatName.OUT_OCTETS_RATE.value());
+                            toquotaInfo = monitorService.getInterfaceRate(toNode.getMonitorUuid(), TopoEnum.QuoatName.OUT_OCTETS_RATE.value());
                         }
                         QuotaItemInfo fromiteminfo = fromquotaInfo.getItemInfo();
                         QuotaItemInfo toiteminfo = toquotaInfo.getItemInfo();
                         Optional<QuotaItemData> fromdata = Optional.empty();
                         Optional<QuotaItemData> todata = Optional.empty();
-                        if (fromiteminfo!=null){
+                        if (fromiteminfo != null) {
                             TopoPortEntity finalFromPort = fromPort;
-                            fromdata =fromiteminfo.getItemData().stream().filter(x->x.getName().equals(finalFromPort.getPort())).findFirst();
+                            fromdata = fromiteminfo.getItemData().stream().filter(x -> x.getName().equals(finalFromPort.getPort())).findFirst();
                         }
-                        if (toiteminfo!=null){
+                        if (toiteminfo != null) {
                             TopoPortEntity finalToPort = toPort;
-                            todata =toiteminfo.getItemData().stream().filter(x->x.getName().equals(finalToPort.getPort())).findFirst();
+                            todata = toiteminfo.getItemData().stream().filter(x -> x.getName().equals(finalToPort.getPort())).findFirst();
                         }
-                        if (fromdata.isPresent()){
+                        if (fromdata.isPresent()) {
                             linkRateView.setFormNodeRate(kpbs2Mbps(fromdata.get().getValue()));
                         }
-                        if (todata.isPresent()){
+                        if (todata.isPresent()) {
                             linkRateView.setToNodeRate(kpbs2Mbps(todata.get().getValue()));
                         }
 
-                    }else {
+                    } else {
                         linkRateView.setLinkStatus("0");
                     }
                     view.add(linkRateView);
@@ -402,15 +402,26 @@ public class TopoServiceImpl implements TopoService {
 
     @Override
     public boolean insertTopoNodeList(List<TopoNodeEntity> nodes) {
-        nodes.forEach(x->{
+        nodes.forEach(x -> {
             dao.insertTopoNode(x);
         });
         return true;
     }
 
+    @Override
+    public TopoBusinessNodeEntity getBusinessNodeByUuid(String uuid) {
+        return dao.getBusinessNodeByUuid(uuid);
+    }
+
+    @Override
+    public TopoCanvasEntity getCanvasByUuid(String uuid) {
+        return dao.getCanvasByUUid(uuid);
+    }
+
 
     /**
      * 将str转为float保留两位小数
+     *
      * @param str
      * @return
      */
@@ -423,15 +434,15 @@ public class TopoServiceImpl implements TopoService {
         return String.valueOf(df);
     }
 
-    private String kpbs2Mbps(String str){
+    private String kpbs2Mbps(String str) {
         Double d = Double.parseDouble(str);
-        if (d>1024){
-            Double t = d/1024;
+        if (d > 1024) {
+            Double t = d / 1024;
             BigDecimal b = new BigDecimal(t);
             double df = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-            return String.valueOf(df)+"Mbps";
-        }else {
-            return str+"Kbps";
+            return String.valueOf(df) + "Mbps";
+        } else {
+            return str + "Kbps";
         }
 
     }

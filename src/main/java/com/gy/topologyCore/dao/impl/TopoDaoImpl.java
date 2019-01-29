@@ -186,11 +186,50 @@ public class TopoDaoImpl implements TopoDao {
     }
 
     @Override
+    public TopoBusinessNodeEntity getBusinessNodeByUuid(String uuid) {
+        String sql = "FROM TopoBusinessNodeEntity node WHERE node.uuid =:uuid";
+        List<TopoBusinessNodeEntity> entitys= em.createQuery(sql, TopoBusinessNodeEntity.class)
+                .setParameter("uuid", uuid)
+                .getResultList();
+        if (entitys.size()>0){
+                return entitys.get(0);
+        }else {
+            return null;
+        }
+    }
+
+    @Override
+    public TopoBusinessLinkEntity getBusinessLinkByUuid(String uuid) {
+        String sql = "FROM TopoBusinessLinkEntity link WHERE link.uuid =:uuid";
+        List<TopoBusinessLinkEntity> entitys= em.createQuery(sql, TopoBusinessLinkEntity.class)
+                .setParameter("uuid", uuid)
+                .getResultList();
+        if (entitys.size()>0){
+            return entitys.get(0);
+        }else {
+            return null;
+        }
+    }
+
+    @Override
     public List<TopoCanvasEntity> getCanvasByType(String name) {
         String sql = "From TopoCanvasEntity canvas WHERE canvas.canvasType =:name";
         return em.createQuery(sql, TopoCanvasEntity.class)
                 .setParameter("name", name)
                 .getResultList();
+    }
+
+    @Override
+    public TopoCanvasEntity getCanvasByUUid(String uuid) {
+        String sql = "From TopoCanvasEntity canvas WHERE canvas.uuid =:uuid";
+        List<TopoCanvasEntity> canvass =  em.createQuery(sql, TopoCanvasEntity.class)
+                .setParameter("uuid", uuid)
+                .getResultList();
+        if (canvass.size()>0){
+            return canvass.get(0);
+        }else {
+            return null;
+        }
     }
 
     @Override

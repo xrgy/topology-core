@@ -50,8 +50,14 @@ public interface TopoDao {
 
     public List<TopoBusinessLinkEntity>  getAllBusinessLinkByCanvasId(String uuid);
 
+    public TopoBusinessNodeEntity  getBusinessNodeByUuid(String uuid);
+
+    public TopoBusinessLinkEntity  getBusinessLinkByUuid(String uuid);
+
     public List<TopoCanvasEntity> getCanvasByType(String name);
 
+
+    public TopoCanvasEntity getCanvasByUUid(String uuid);
 
     List<TopoBusinessNodeEntity> getAllWeaveTopoNode();
 

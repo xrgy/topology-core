@@ -55,14 +55,20 @@ public class TopoController {
 
     @RequestMapping("getAllWeaveTopoNode")
     @ResponseBody
-    public String getAllWeaveTopoNode() throws JsonProcessingException {
-        return mapper.writeValueAsString(service.getAllWeaveTopoNode());
+    public String getAllWeaveTopoNode(String canvasId) throws JsonProcessingException {
+        return mapper.writeValueAsString(service.getAllWeaveTopoNode(canvasId));
+    }
+
+    @RequestMapping("getBusinessNodeByUuid")
+    @ResponseBody
+    public String getBusinessNodeByUuid(String uuid) throws JsonProcessingException {
+        return mapper.writeValueAsString(service.getBusinessNodeByUuid(uuid));
     }
 
     @RequestMapping("getAllWeaveTopoLink")
     @ResponseBody
-    public String getAllWeaveTopoLink() throws JsonProcessingException {
-        return mapper.writeValueAsString(service.getAllWeaveTopoLink());
+    public String getAllWeaveTopoLink(String canvasId) throws JsonProcessingException {
+        return mapper.writeValueAsString(service.getAllWeaveTopoLink(canvasId));
     }
 
     @RequestMapping("getAllNetTopoNode")
@@ -81,6 +87,12 @@ public class TopoController {
     @ResponseBody
     public String getCanvasByType(String name) throws JsonProcessingException {
         return mapper.writeValueAsString(service.getCanvasByType(name));
+    }
+
+    @RequestMapping("getCanvasByUUid")
+    @ResponseBody
+    public String getCanvasByUUid(String uuid) throws JsonProcessingException {
+        return mapper.writeValueAsString(service.getCanvasByUuid(uuid));
     }
 
     @RequestMapping("getAllNetTopoPort")
