@@ -78,6 +78,28 @@ public interface TopoDao {
     List<TopoNodeEntity> getTopoNodeBymonitoruuid(String monitorUuid);
 
     boolean deleteTopoLinkByPort(String uuid);
+    
+    boolean deleteTopoLinkByUuid(String uuid);
 
     boolean deleteTopoPortByNodeUuid(String uuid);
+
+    /**
+     * 删除不在这些uuids中的节点
+     * @param uuids
+     * @return
+     */
+    boolean deleteTopoNodeNotInUuids(List<String> uuids);
+
+    boolean deleteTopoPortNotInUuids(List<String> uuids);
+
+    boolean deleteTopoLinkNotInUuids(List<String> uuids);
+
+    TopoLinkEntity getlinkNetTopoLinkByUUid(String uuid);
+
+    boolean deleteTopoPortByUuid(String fromPortId);
+
+    boolean delBusinessTopoLink(String uuid);
+
+    boolean delBusinessTopoLinkByUuid(String uuid);
+    boolean delBusinessTopoNode(String uuid);
 }

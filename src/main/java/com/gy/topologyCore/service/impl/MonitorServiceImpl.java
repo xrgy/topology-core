@@ -6,6 +6,7 @@ import com.gy.topologyCore.entity.snmp.InterfaceInfo;
 import com.gy.topologyCore.entity.snmp.LldpInfos;
 import com.gy.topologyCore.entity.monitor.NetworkMonitorEntity;
 import com.gy.topologyCore.service.MonitorService;
+import com.gy.topologyCore.utils.EtcdUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
@@ -43,12 +44,12 @@ public class MonitorServiceImpl implements MonitorService {
 
     private String monitorPrefix(){
         String ip = "";
-        try {
+//        try {
             ip="127.0.0.1";
 //            ip = EtcdUtil.getClusterIpByServiceName("monitor-core-service");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         return HTTP+ip+":"+PORT+"/"+PREFIX+"/";
     }
 

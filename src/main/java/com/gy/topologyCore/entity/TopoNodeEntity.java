@@ -18,9 +18,12 @@ import javax.persistence.Table;
 @Table(name = "tbl_topo_node")
 public class TopoNodeEntity {
 
-    @Id
+        @Id
     @Column(name = "uuid")
     String uuid;
+//    @Id
+//    @Column(name = "monitor_uuid")
+//    String monitorUuid;
 
     @Column(name = "canvas_id")
     String canvasId;
@@ -28,8 +31,6 @@ public class TopoNodeEntity {
     @Column(name = "node_name")
     String nodeName;
 
-    @Column(name = "monitor_uuid")
-    String monitorUuid;
 
     @Column(name = "x_point")
     int xPoint;

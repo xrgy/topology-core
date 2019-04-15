@@ -1,6 +1,7 @@
 package com.gy.topologyCore.service;
 
 import com.gy.topologyCore.entity.*;
+import com.gy.topologyCore.entity.snmp.LldpInfos;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
 public interface TopoService {
     public TestEntity getJPAInfo();
 
-    public void getLldpInfo();
+    public void getLldpInfo(LldpInfos infos);
 
     void getWeaveInfo();
 
@@ -40,6 +41,9 @@ public interface TopoService {
      */
     boolean deleteTopoResourceBymonitoruuid(String monitorUuid);
 
+
+
+    boolean deleteTopoLinkByUuid(String uuid);
 
     /**
      * 获取画布链路流量信息
@@ -71,4 +75,17 @@ public interface TopoService {
      * @return
      */
     TopoCanvasEntity getCanvasByUuid(String uuid);
+
+    boolean insertBusinessTopoNodeList(List<TopoBusinessNodeEntity> nodes);
+
+    /**
+     * 删除业务相关拓扑资源
+     * @param uuid 业务uuid
+     * @return
+     */
+    boolean delTopoResourceByBusinessId(String uuid);
+
+    boolean deleteBusTopoLinkByUuid(String uuid);
+
+    boolean deleteBusTopoNodeByUuid(String uuid);
 }

@@ -18,7 +18,8 @@ public class BingoApplication {
     public static void main(String[] args){
         ProperUtil.SetConfInfo();
         SpringApplication.run(BingoApplication.class,args);
-//        WeaveScheduleTask task = new WeaveScheduleTask();
+        WeaveScheduleTask task = new WeaveScheduleTask();
 //        task.scheduleGetWeaveInfo();
+//        task.scheduleGetLLDPInfo();
     }
 }

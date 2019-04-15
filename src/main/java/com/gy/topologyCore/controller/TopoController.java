@@ -4,13 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gy.topologyCore.entity.*;
+import com.gy.topologyCore.entity.snmp.LldpInfos;
 import com.gy.topologyCore.schedule.WeaveScheduleTask;
 import com.gy.topologyCore.service.TopoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,9 +38,9 @@ public class TopoController {
 
     @RequestMapping("getLldpInfo")
     @ResponseBody
-    public void getLldpInfo(String uuid){
+    public void getLldpInfo(@RequestBody LldpInfos infos){
 
-        service.getLldpInfo();
+        service.getLldpInfo(infos);
     }
 
     @RequestMapping("getWeaveInfo")
@@ -108,6 +106,11 @@ public class TopoController {
     public boolean deleteTopoResourceBymonitoruuid(String monitorUuid) throws JsonProcessingException {
         return service.deleteTopoResourceBymonitoruuid(monitorUuid);
     }
+    @RequestMapping("deleteTopoLinkByUuid")
+    @ResponseBody
+    public boolean deleteTopoLinkByUuid(String uuid){
+        return service.deleteTopoLinkByUuid(uuid);
+    }
 
     @RequestMapping("getCanvasLinkRate")
     @ResponseBody
@@ -120,5 +123,28 @@ public class TopoController {
     public boolean insertTopoNodeList(@RequestBody String data) throws IOException {
         List<TopoNodeEntity> nodes = mapper.readValue(data,new TypeReference<List<TopoNodeEntity>>(){});
         return service.insertTopoNodeList(nodes);
+    }
+
+    @RequestMapping("insertBusinessTopoNodeList")
+    @ResponseBody
+    public boolean insertBusinessTopoNodeList(@RequestBody String data) throws IOException {
+        List<TopoBusinessNodeEntity> nodes = mapper.readValue(data,new TypeReference<List<TopoBusinessNodeEntity>>(){});
+        return service.insertBusinessTopoNodeList(nodes);
+    }
+
+    @RequestMapping(value = "delBusinessTopoResource", method = RequestMethod.DELETE)
+    @ResponseBody
+    public boolean delTopoResourceByBusinessId(String uuid) {
+        return service.delTopoResourceByBusinessId(uuid);
+    }
+    @RequestMapping(value = "deleteBusTopoLinkByUuid",method = RequestMethod.DELETE)
+    @ResponseBody
+    public boolean deleteBusTopoLinkByUuid(String uuid){
+        return service.deleteBusTopoLinkByUuid(uuid);
+    }
+    @RequestMapping(value = "deleteBusTopoNodeByUuid",method = RequestMethod.DELETE)
+    @ResponseBody
+    public boolean deleteBusTopoNodeByUuid(String uuid){
+        return service.deleteBusTopoNodeByUuid(uuid);
     }
 }

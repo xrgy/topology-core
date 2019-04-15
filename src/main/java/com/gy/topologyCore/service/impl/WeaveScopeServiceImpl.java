@@ -26,19 +26,19 @@ public class WeaveScopeServiceImpl implements WeaveScopeService{
     private static final String PREFIX = "business";
     private static final String PATH_WEAVE_INFO = "getWeaveInfo";
 
-//    private static final String ip="127.0.0.1";
+    private static final String ip="127.0.0.1";
     @Autowired
     ObjectMapper mapper;
 
 
 
     private String businessPrefix(){
-        String ip = "";
-        try {
-            ip = EtcdUtil.getClusterIpByServiceName("business-core-service");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        String ip = "";
+//        try {
+//            ip = EtcdUtil.getClusterIpByServiceName("business-core-service");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         return HTTP+ip+":"+PORT+"/"+PREFIX+"/";
     }
 

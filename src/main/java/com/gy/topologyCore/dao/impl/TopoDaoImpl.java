@@ -3,7 +3,11 @@ package com.gy.topologyCore.dao.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.gy.topologyCore.dao.TopoDao;
 import com.gy.topologyCore.entity.*;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.SQLQuery;
+import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,6 +116,8 @@ public class TopoDaoImpl implements TopoDao {
     }
 
     @Override
+    @Transactional
+    @Modifying
     public void deleteLinkByCanvasId(String canvasId) {
         String sql = "delete from TopoLinkEntity link WHERE link.canvasId =:canvasId";
         em.createQuery(sql)
@@ -120,6 +126,8 @@ public class TopoDaoImpl implements TopoDao {
     }
 
     @Override
+    @Transactional
+    @Modifying
     public boolean deleteTopoLinkByPort(String port) {
         String sql = "delete from TopoLinkEntity link WHERE link.fromPortId =:port or " +
                 " link.toPortId =:port";
@@ -130,8 +138,107 @@ public class TopoDaoImpl implements TopoDao {
     }
 
     @Override
+    @Transactional
+    @Modifying
+    public boolean deleteTopoLinkByUuid(String uuid) {
+        String sql = "delete from TopoLinkEntity link WHERE link.uuid =:uuid";
+        int res =em.createQuery(sql)
+                .setParameter("uuid", uuid)
+                .executeUpdate();
+        return res > 0;
+    }
+
+    @Override
+    @Transactional
+    @Modifying
     public boolean deleteTopoPortByNodeUuid(String uuid) {
         String sql = "delete from TopoPortEntity port WHERE port.nodeUuid =:uuid";
+        int res =em.createQuery(sql)
+                .setParameter("uuid", uuid)
+                .executeUpdate();
+        return res > 0;
+    }
+
+    @Override
+    @Transactional
+    @Modifying
+    public boolean deleteTopoNodeNotInUuids(List<String> uuids) {
+        String sql = "DELETE from tbl_topo_node where uuid NOT in('"+ StringUtils.join(uuids,"','")+"')";
+        int res = em.createNativeQuery(sql)
+                .executeUpdate();
+        return res > 0;
+    }
+
+    @Override
+    @Transactional
+    @Modifying
+    public boolean deleteTopoPortNotInUuids(List<String> uuids) {
+        String sql = "DELETE from tbl_topo_port where uuid NOT in('"+ StringUtils.join(uuids,"','")+"')";
+        int res = em.createNativeQuery(sql)
+                .executeUpdate();
+        return res > 0;
+    }
+
+    @Override
+    @Transactional
+    @Modifying
+    public boolean deleteTopoLinkNotInUuids(List<String> uuids) {
+        String sql = "DELETE from tbl_topo_link where uuid NOT in('"+ StringUtils.join(uuids,"','")+"')";
+        int res = em.createNativeQuery(sql)
+                .executeUpdate();
+        return res > 0;
+    }
+
+    @Override
+    public TopoLinkEntity getlinkNetTopoLinkByUUid(String uuid) {
+        String sql = "FROM TopoLinkEntity link WHERE link.uuid =:uuid";
+        List<TopoLinkEntity> links =  em.createQuery(sql, TopoLinkEntity.class)
+                .setParameter("uuid", uuid)
+                .getResultList();
+        if (links.size()>0){
+            return links.get(0);
+        }else {
+            return null;
+        }
+    }
+
+    @Override
+    @Transactional
+    @Modifying
+    public boolean deleteTopoPortByUuid(String portId) {
+        String sql = "delete from TopoPortEntity port WHERE port.uuid =:uuid";
+        int res =em.createQuery(sql)
+                .setParameter("uuid", portId)
+                .executeUpdate();
+        return res > 0;
+    }
+
+    @Override
+    @Transactional
+    @Modifying
+    public boolean delBusinessTopoLink(String uuid) {
+        String sql = "delete from TopoBusinessLinkEntity link WHERE link.fromNodeId =:uuid or link.toNodeId =:uuid";
+        int res =em.createQuery(sql)
+                .setParameter("uuid", uuid)
+                .executeUpdate();
+        return res > 0;
+    }
+    @Override
+    @Transactional
+    @Modifying
+    public boolean delBusinessTopoLinkByUuid(String uuid) {
+        String sql = "delete from TopoBusinessLinkEntity link WHERE link.uuid =:uuid";
+        int res =em.createQuery(sql)
+                .setParameter("uuid", uuid)
+                .executeUpdate();
+        return res > 0;
+    }
+
+    @Override
+    @Transactional
+    @Modifying
+    public boolean delBusinessTopoNode(String uuid) {
+        String sql = "delete from TopoBusinessNodeEntity node WHERE node.uuid =:uuid";
         int res =em.createQuery(sql)
                 .setParameter("uuid", uuid)
                 .executeUpdate();
@@ -247,6 +354,8 @@ public class TopoDaoImpl implements TopoDao {
     }
 
     @Override
+    @Transactional
+    @Modifying
     public boolean deleteTopoNodeBymonitoruuid(String monitorUuid) {
         String sql = "DELETE FROM TopoNodeEntity WHERE monitorUuid =:monitorUuid";
         int res = em.createQuery(sql)
