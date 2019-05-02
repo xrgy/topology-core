@@ -19,7 +19,7 @@ public class WeaveScheduleTask {
     //@Component泛指各种组件，就是说当我们的类不属于各种归类的时候（不属于@Controller、@Services等的时候），我们就可以使用@Component来标注这个类。
     //被@PostConstruct修饰的方法会在服务器加载Servle的时候运行，并且只会被服务器执行一次。PostConstruct在构造函数之后执行,init()方法之前执行。
     ScheduledExecutorService serviceSchedule = Executors.newScheduledThreadPool(5);
-    ScheduledExecutorService lldpServiceSchedule = Executors.newScheduledThreadPool(5);
+//    ScheduledExecutorService lldpServiceSchedule = Executors.newScheduledThreadPool(5);
 
     @Autowired
     TopoService topoService;
@@ -27,26 +27,26 @@ public class WeaveScheduleTask {
     @Autowired
     MonitorService monitorService;
 
-    @PostConstruct
+//    @PostConstruct
     public void scheduleGetWeaveInfo() {
         serviceSchedule.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-//                topoService.getWeaveInfo();
-//                System.out.println(topoService.getCanvasByUuid("ee2c9b27-af41-4d1a-a6ee-b88fe5a8a845"));
+                topoService.getWeaveInfo();
+                System.out.println("start weave");
             }
-        }, 20, 10, TimeUnit.SECONDS);
+        }, 30, 30, TimeUnit.SECONDS);
 
     }
-    @PostConstruct
-    public void scheduleGetLLDPInfo() {
-        lldpServiceSchedule.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-//                topoService.getLldpInfo();
-//                System.out.println(monitorService.getNetworkMonitorEntity("0b6b3cdf-fbbb-480a-aaa7-41edd38d75a3"));
-            }
-        }, 2, 5, TimeUnit.SECONDS);
-
-    }
+//    @PostConstruct
+//    public void scheduleGetLLDPInfo() {
+//        lldpServiceSchedule.scheduleAtFixedRate(new Runnable() {
+//            @Override
+//            public void run() {
+////                topoService.getLldpInfo();
+////                System.out.println(monitorService.getNetworkMonitorEntity("0b6b3cdf-fbbb-480a-aaa7-41edd38d75a3"));
+//            }
+//        }, 2, 5, TimeUnit.SECONDS);
+//
+//    }
 }

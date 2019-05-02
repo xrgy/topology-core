@@ -50,6 +50,8 @@ public class MonitorServiceImpl implements MonitorService {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
+//        return HTTP+"47.105.64.176:30004/"+PREFIX+"/";
+
         return HTTP+ip+":"+PORT+"/"+PREFIX+"/";
     }
 

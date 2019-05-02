@@ -39,6 +39,7 @@ public class WeaveScopeServiceImpl implements WeaveScopeService{
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
+//        return HTTP+"47.105.64.176:30088/"+PREFIX+"/";
         return HTTP+ip+":"+PORT+"/"+PREFIX+"/";
     }
 

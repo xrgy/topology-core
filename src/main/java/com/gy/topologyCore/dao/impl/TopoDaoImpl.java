@@ -54,7 +54,7 @@ public class TopoDaoImpl implements TopoDao {
     @Override
     public CompletionStage<Optional<TopoNodeEntity>> getNodeByMonitorAndCanvas(String monitorUUid, String canvasId) {
 
-        String sql = "From TopoNodeEntity node WHERE node.monitorUuid = :monitoruuid AND node.canvasId = :canvasid";
+        String sql = "From TopoNodeEntity node WHERE node.uuid = :monitoruuid AND node.canvasId = :canvasid";
         return CompletableFuture.supplyAsync(() -> {
             Query query = em.createQuery(sql, TopoNodeEntity.class)
                     .setParameter("monitoruuid", monitorUUid)
@@ -357,7 +357,7 @@ public class TopoDaoImpl implements TopoDao {
     @Transactional
     @Modifying
     public boolean deleteTopoNodeBymonitoruuid(String monitorUuid) {
-        String sql = "DELETE FROM TopoNodeEntity WHERE monitorUuid =:monitorUuid";
+        String sql = "DELETE FROM TopoNodeEntity WHERE uuid =:monitorUuid";
         int res = em.createQuery(sql)
                 .setParameter("monitorUuid", monitorUuid)
                 .executeUpdate();
@@ -366,7 +366,7 @@ public class TopoDaoImpl implements TopoDao {
 
     @Override
     public List<TopoNodeEntity> getTopoNodeBymonitoruuid(String monitorUuid) {
-        String sql = "FROM TopoNodeEntity node WHERE node.monitorUuid =:monitorUuid";
+        String sql = "FROM TopoNodeEntity node WHERE node.uuid =:monitorUuid";
         return em.createQuery(sql, TopoNodeEntity.class)
                 .setParameter("monitorUuid", monitorUuid)
                 .getResultList();

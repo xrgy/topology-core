@@ -50,253 +50,261 @@ public class TopoServiceImpl implements TopoService {
         List<TopoNodeEntity> nodeEntityList = dao.getAllNodeByCanvasId(canvas.getUuid());
 //        monitorService.getExporterLldpInfo().thenAccept(lldpInfos -> {
 //            Map<String, String> nodeMonitorMap = new HashMap<>();
-            List<LldpInfo> lldp = lldpInfos.getLldpInfos();
-            lldp.forEach(node -> {
-                Optional<TopoNodeEntity> nodeEntity = nodeEntityList.stream()
-                        .filter(n -> n.getUuid().equals(node.getMonitorUuid())).findFirst();
-                if (nodeEntity.isPresent()) {
+        List<LldpInfo> lldp = lldpInfos.getLldpInfos();
+        lldp.forEach(node -> {
+            Optional<TopoNodeEntity> nodeEntity = nodeEntityList.stream()
+                    .filter(n -> n.getUuid().equals(node.getMonitorUuid())).findFirst();
+            if (nodeEntity.isPresent()) {
 //                    nodeMonitorMap.put(nodeEntity.get().getMonitorUuid(), nodeEntity.get().getUuid());
-                    notdelNode.add(nodeEntity.get().getUuid());
-                } else {
+                notdelNode.add(nodeEntity.get().getUuid());
+            } else {
 //                    String randomUuid = UUID.randomUUID().toString();
-                    TopoNodeEntity insertNode = new TopoNodeEntity();
+                TopoNodeEntity insertNode = new TopoNodeEntity();
 //                    insertNode.setUuid(randomUuid);
-                    insertNode.setUuid(node.getMonitorUuid());
-                    insertNode.setCanvasId(canvas.getUuid());
+                insertNode.setUuid(node.getMonitorUuid());
+                insertNode.setCanvasId(canvas.getUuid());
 //                    insertNode.setMonitorUuid(node.getMonitorUuid());
-                    insertNode.setXPoint(10);
-                    insertNode.setYPoint(10);
-                    monitorService.getNetworkMonitorEntity(node.getMonitorUuid()).thenApply(operationMonitorEntity -> {
-                        insertNode.setNodeName(operationMonitorEntity.getName());
-                        insertNode.setNodeType(operationMonitorEntity.getLightType());
-                        return insertNode;
-                    }).thenAccept(inserNode -> {
-                        TopoNodeEntity nodeExist = dao.insertTopoNode(inserNode);
-                        notdelNode.add(nodeExist.getUuid());
+                insertNode.setXPoint(10);
+                insertNode.setYPoint(10);
+                monitorService.getNetworkMonitorEntity(node.getMonitorUuid()).thenApply(operationMonitorEntity -> {
+                    insertNode.setNodeName(operationMonitorEntity.getName());
+                    insertNode.setNodeType(operationMonitorEntity.getLightType());
+                    return insertNode;
+                }).thenAccept(inserNode -> {
+                    TopoNodeEntity nodeExist = dao.insertTopoNode(inserNode);
+                    notdelNode.add(nodeExist.getUuid());
 //                        nodeMonitorMap.put(nodeExist.getMonitorUuid(), nodeExist.getUuid());
-                    });
-                }
-            });
-            //localinfo 做成hashcode
-            HashMap<String, LocalHashNode> hashMapLocalNode = new HashMap<>();
-            lldp.forEach(l -> {
-                String ip = l.getIp();
-                String monitId = l.getMonitorUuid();
-                l.getLocalInfos().forEach(local -> {
-                    LocalHashNode hashNode = new LocalHashNode();
-                    hashNode.setIp(ip);
-                    hashNode.setMonitorUuid(monitId);
-                    hashNode.setLocalPortName(local.getLocalPortName());
-                    hashNode.setLocalPortIndex(local.getLocalPortIndex());
-                    hashNode.setLocalPortMac(local.getLocalPortMac());
-                    //hash
-                    hashMapLocalNode.put(getLocalNodeHashCode(local.getLocalPortMac(), local.getLocalPortName()), hashNode);
                 });
+            }
+        });
+        //localinfo 做成hashcode
+        HashMap<String, LocalHashNode> hashMapLocalNode = new HashMap<>();
+        lldp.forEach(l -> {
+            String ip = l.getIp();
+            String monitId = l.getMonitorUuid();
+            l.getLocalInfos().forEach(local -> {
+                LocalHashNode hashNode = new LocalHashNode();
+                hashNode.setIp(ip);
+                hashNode.setMonitorUuid(monitId);
+                hashNode.setLocalPortName(local.getLocalPortName());
+                hashNode.setLocalPortIndex(local.getLocalPortIndex());
+                hashNode.setLocalPortMac(local.getLocalPortMac());
+                //hash
+                hashMapLocalNode.put(getLocalNodeHashCode(local.getLocalPortMac(), local.getLocalPortName()), hashNode);
             });
+        });
 
-            List<TopoLinkEntity> linkEntityList = dao.getAllLinkByCanvasId(canvas.getUuid());
+        List<TopoLinkEntity> linkEntityList = dao.getAllLinkByCanvasId(canvas.getUuid());
 
-            for (int i = 0; i < lldp.size(); i++) {
-                LldpInfo localNode = lldp.get(i);
-                localNode.getRemInfos().forEach(localRem -> {
+        for (int i = 0; i < lldp.size(); i++) {
+            LldpInfo localNode = lldp.get(i);
+            localNode.getRemInfos().forEach(localRem -> {
 
-                    String hashCode = getLocalNodeHashCode(localRem.getRemPortMac(), localRem.getRemPortName());
-                    LocalHashNode elseNodeLocal = hashMapLocalNode.get(hashCode);
-                    if (null != elseNodeLocal) {
-                        String fromNodeMonitorUuid = localNode.getMonitorUuid();
-                        String fromNodePort = localNode.getLocalInfos().stream()
-                                .filter(local -> local.getLocalPortIndex().equals(localRem.getRemLocalIndex()))
-                                .findFirst().map(LocalInfo::getLocalPortName).orElse("");
+                String hashCode = getLocalNodeHashCode(localRem.getRemPortMac(), localRem.getRemPortName());
+                LocalHashNode elseNodeLocal = hashMapLocalNode.get(hashCode);
+                if (null != elseNodeLocal) {
+                    String fromNodeMonitorUuid = localNode.getMonitorUuid();
+                    String fromNodePort = localNode.getLocalInfos().stream()
+                            .filter(local -> local.getLocalPortIndex().equals(localRem.getRemLocalIndex()))
+                            .findFirst().map(LocalInfo::getLocalPortName).orElse("");
 //                        String fromNodeId = nodeMonitorMap.get(fromNodeMonitorUuid);
-                        String fromNodeId = fromNodeMonitorUuid;
-                        List<TopoPortEntity> fromPortList = dao.getAllPortByNodeId(fromNodeId);
-                        Optional<TopoPortEntity> fromPortOpt = fromPortList.stream().filter(x -> x.getPort().equals(fromNodePort)).findFirst();
+                    String fromNodeId = fromNodeMonitorUuid;
+                    List<TopoPortEntity> fromPortList = dao.getAllPortByNodeId(fromNodeId);
+                    Optional<TopoPortEntity> fromPortOpt = fromPortList.stream().filter(x -> x.getPort().equals(fromNodePort)).findFirst();
 
-                        String toNodeMonitorUuid = elseNodeLocal.getMonitorUuid();
-                        String toNodePort = elseNodeLocal.getLocalPortName();
+                    String toNodeMonitorUuid = elseNodeLocal.getMonitorUuid();
+                    String toNodePort = elseNodeLocal.getLocalPortName();
 //                        String toNodeId = nodeMonitorMap.get(toNodeMonitorUuid);
-                        String toNodeId = toNodeMonitorUuid;
-                        List<TopoPortEntity> toPortList = dao.getAllPortByNodeId(toNodeId);
-                        Optional<TopoPortEntity> toPortOpt = toPortList.stream().filter(x -> x.getPort().equals(toNodePort)).findFirst();
-                        if (fromPortOpt.isPresent() && toPortOpt.isPresent()) {
-                            notdelport.add(fromPortOpt.get().getUuid());
-                            notdelport.add(toPortOpt.get().getUuid());
-                            Optional<TopoLinkEntity> linkOpt = linkEntityList.stream().filter(link -> (link.getFromPortId().equals(fromPortOpt.get().getUuid())
-                                    && link.getToPortId().equals(toPortOpt.get().getUuid())) || (link.getFromPortId().equals(toPortOpt.get().getUuid())
-                                    && link.getToPortId().equals(fromPortOpt.get().getUuid()))).findFirst();
-                            if (!linkOpt.isPresent()) {
-                                //删除from这条链路
-                                //删除to这条链路
-                                dao.deleteTopoLinkByPort(fromPortOpt.get().getUuid());
-                                dao.deleteTopoLinkByPort(toPortOpt.get().getUuid());
-                                //持久化这条链路
-                                TopoLinkEntity link = new TopoLinkEntity();
-                                link.setUuid(UUID.randomUUID().toString());
-//                                link.setFromNodeId(fromNodeId);
-//                                link.setToNodeId(toNodeId);
-                                link.setFromPortId(fromPortOpt.get().getUuid());
-                                link.setToPortId(toPortOpt.get().getUuid());
-                                link.setCanvasId(canvas.getUuid());
-                                dao.insertTopoLink(link);
-                                linkEntityList.add(link);
-                                notdelLink.add(link.getUuid());
-                            }else {
-                                notdelLink.add(linkOpt.get().getUuid());
-
-                            }
-                        } else {
-                            TopoPortEntity fromPortInsert = null;
-                            TopoPortEntity toPortInsert = null;
-                            if (fromPortOpt.isPresent()) {
-                                notdelport.add(fromPortOpt.get().getUuid());
-                                //to持久化
-                                TopoPortEntity toPort = new TopoPortEntity();
-                                toPort.setUuid(UUID.randomUUID().toString());
-                                toPort.setNodeUuid(toNodeId);
-                                toPort.setPort(toNodePort);
-                                toPortInsert = dao.insertTopoPort(toPort);
-                                notdelport.add(toPortInsert.getUuid());
-                            } else if (toPortOpt.isPresent()) {
-                                notdelport.add(toPortOpt.get().getUuid());
-                                //from持久化
-                                TopoPortEntity fromPort = new TopoPortEntity();
-                                fromPort.setUuid(UUID.randomUUID().toString());
-                                fromPort.setNodeUuid(fromNodeId);
-                                fromPort.setPort(fromNodePort);
-                                fromPortInsert = dao.insertTopoPort(fromPort);
-                                notdelport.add(fromPortInsert.getUuid());
-                            } else {
-                                //from and to 持久化
-                                TopoPortEntity fromPort = new TopoPortEntity();
-                                fromPort.setUuid(UUID.randomUUID().toString());
-                                fromPort.setNodeUuid(fromNodeId);
-                                fromPort.setPort(fromNodePort);
-                                TopoPortEntity toPort = new TopoPortEntity();
-                                toPort.setUuid(UUID.randomUUID().toString());
-                                toPort.setNodeUuid(toNodeId);
-                                toPort.setPort(toNodePort);
-                                fromPortInsert = dao.insertTopoPort(fromPort);
-                                toPortInsert = dao.insertTopoPort(toPort);
-                                notdelport.add(fromPortInsert.getUuid());
-                                notdelport.add(toPortInsert.getUuid());
-
-                            }
-                            //持久化链路
+                    String toNodeId = toNodeMonitorUuid;
+                    List<TopoPortEntity> toPortList = dao.getAllPortByNodeId(toNodeId);
+                    Optional<TopoPortEntity> toPortOpt = toPortList.stream().filter(x -> x.getPort().equals(toNodePort)).findFirst();
+                    if (fromPortOpt.isPresent() && toPortOpt.isPresent()) {
+                        notdelport.add(fromPortOpt.get().getUuid());
+                        notdelport.add(toPortOpt.get().getUuid());
+                        Optional<TopoLinkEntity> linkOpt = linkEntityList.stream().filter(link -> (link.getFromPortId().equals(fromPortOpt.get().getUuid())
+                                && link.getToPortId().equals(toPortOpt.get().getUuid())) || (link.getFromPortId().equals(toPortOpt.get().getUuid())
+                                && link.getToPortId().equals(fromPortOpt.get().getUuid()))).findFirst();
+                        if (!linkOpt.isPresent()) {
+                            //删除from这条链路
+                            //删除to这条链路
+                            dao.deleteTopoLinkByPort(fromPortOpt.get().getUuid());
+                            dao.deleteTopoLinkByPort(toPortOpt.get().getUuid());
+                            //持久化这条链路
                             TopoLinkEntity link = new TopoLinkEntity();
                             link.setUuid(UUID.randomUUID().toString());
-//                            link.setFromNodeId(fromNodeId);
-//                            link.setToNodeId(toNodeId);
-                            link.setFromPortId(fromPortInsert.getUuid());
-                            link.setToPortId(toPortInsert.getUuid());
+//                                link.setFromNodeId(fromNodeId);
+//                                link.setToNodeId(toNodeId);
+                            link.setFromPortId(fromPortOpt.get().getUuid());
+                            link.setToPortId(toPortOpt.get().getUuid());
                             link.setCanvasId(canvas.getUuid());
                             dao.insertTopoLink(link);
                             linkEntityList.add(link);
                             notdelLink.add(link.getUuid());
+                        } else {
+                            notdelLink.add(linkOpt.get().getUuid());
+
                         }
+                    } else {
+                        TopoPortEntity fromPortInsert = null;
+                        TopoPortEntity toPortInsert = null;
+                        if (fromPortOpt.isPresent()) {
+                            notdelport.add(fromPortOpt.get().getUuid());
+                            //to持久化
+                            TopoPortEntity toPort = new TopoPortEntity();
+                            toPort.setUuid(UUID.randomUUID().toString());
+                            toPort.setNodeUuid(toNodeId);
+                            toPort.setPort(toNodePort);
+                            toPortInsert = dao.insertTopoPort(toPort);
+                            notdelport.add(toPortInsert.getUuid());
+                        } else if (toPortOpt.isPresent()) {
+                            notdelport.add(toPortOpt.get().getUuid());
+                            //from持久化
+                            TopoPortEntity fromPort = new TopoPortEntity();
+                            fromPort.setUuid(UUID.randomUUID().toString());
+                            fromPort.setNodeUuid(fromNodeId);
+                            fromPort.setPort(fromNodePort);
+                            fromPortInsert = dao.insertTopoPort(fromPort);
+                            notdelport.add(fromPortInsert.getUuid());
+                        } else {
+                            //from and to 持久化
+                            TopoPortEntity fromPort = new TopoPortEntity();
+                            fromPort.setUuid(UUID.randomUUID().toString());
+                            fromPort.setNodeUuid(fromNodeId);
+                            fromPort.setPort(fromNodePort);
+                            TopoPortEntity toPort = new TopoPortEntity();
+                            toPort.setUuid(UUID.randomUUID().toString());
+                            toPort.setNodeUuid(toNodeId);
+                            toPort.setPort(toNodePort);
+                            fromPortInsert = dao.insertTopoPort(fromPort);
+                            toPortInsert = dao.insertTopoPort(toPort);
+                            notdelport.add(fromPortInsert.getUuid());
+                            notdelport.add(toPortInsert.getUuid());
+
+                        }
+                        //持久化链路
+                        TopoLinkEntity link = new TopoLinkEntity();
+                        link.setUuid(UUID.randomUUID().toString());
+//                            link.setFromNodeId(fromNodeId);
+//                            link.setToNodeId(toNodeId);
+                        link.setFromPortId(fromPortInsert.getUuid());
+                        link.setToPortId(toPortInsert.getUuid());
+                        link.setCanvasId(canvas.getUuid());
+                        dao.insertTopoLink(link);
+                        linkEntityList.add(link);
+                        notdelLink.add(link.getUuid());
                     }
-                });
-            }
+                }
+            });
+        }
 //        });
 
 
         //删除not in 的node link port
 //        if (notdelLink.size()>0){
-            dao.deleteTopoLinkNotInUuids(notdelLink);
+        dao.deleteTopoLinkNotInUuids(notdelLink);
 //        }
 //        if (notdelport.size()>0){
-            dao.deleteTopoPortNotInUuids(notdelport);
+        dao.deleteTopoPortNotInUuids(notdelport);
 //        }
 //        if (notdelNode.size()>0){
-            dao.deleteTopoNodeNotInUuids(notdelNode);
+        dao.deleteTopoNodeNotInUuids(notdelNode);
 //        }
     }
 
     @Override
     public void getWeaveInfo() {
-        WeaveContainerImageCluster imageClusterMap = weaveScopeService.getWeaveInfoFromBusiness();
+        WeaveContainerImageCluster imageClusterMap = null;
+        try {
+            imageClusterMap = weaveScopeService.getWeaveInfoFromBusiness();
+        } catch (Exception e) {
+            return;
+        }
+        if (null != imageClusterMap && null != imageClusterMap.getNodes() && imageClusterMap.getNodes().size() > 0) {
 
-        imageClusterMap.getNodes().forEach((clusterId, list) -> {
-            //clusterId是canvas的name
-            TopoCanvasEntity canvasIsAlready = dao.canvasIsExist(clusterId);
-            if (null != canvasIsAlready) {
-                String canvasId = canvasIsAlready.getUuid();
-                List<TopoBusinessNodeEntity> existNodeList = dao.getAllBusinessNodeByCanvasId(canvasId);
-                List<String> existNodeUUid = new ArrayList<>();
-                existNodeList.forEach(x -> {
-                    existNodeUUid.add(x.getUuid());
-                });
+
+            imageClusterMap.getNodes().forEach((clusterId, list) -> {
+                //clusterId是canvas的name
+                TopoCanvasEntity canvasIsAlready = dao.canvasIsExist(clusterId);
+                if (null != canvasIsAlready) {
+                    String canvasId = canvasIsAlready.getUuid();
+                    List<TopoBusinessNodeEntity> existNodeList = dao.getAllBusinessNodeByCanvasId(canvasId);
+                    List<String> existNodeUUid = new ArrayList<>();
+                    existNodeList.forEach(x -> {
+                        existNodeUUid.add(x.getUuid());
+                    });
 //                Map<String,String> allNameToUuid = new HashMap<>();
-                list.forEach(imageNode -> {
+                    list.forEach(imageNode -> {
 //                    allNameToUuid.put(imageNode.getName(),imageNode.getId());
-                    if (!existNodeUUid.contains(imageNode.getId())) {
-                        //该节点不在数据库中
+                        if (!existNodeUUid.contains(imageNode.getId())) {
+                            //该节点不在数据库中
+                            TopoBusinessNodeEntity businessNode = new TopoBusinessNodeEntity();
+                            businessNode.setCanvasId(canvasId);
+                            businessNode.setUuid(imageNode.getId());
+                            businessNode.setNodeName(imageNode.getName());
+                            businessNode.setXPoint(10);
+                            businessNode.setYPoint(10);
+                            dao.insertTopoBusinessNode(businessNode);
+                        }
+                    });
+                    List<TopoBusinessLinkEntity> existLinkList = dao.getAllBusinessLinkByCanvasId(canvasId);
+                    List<String> existLink = new ArrayList<>();
+                    existLinkList.forEach(x -> {
+                        existLink.add(x.getFromNodeId() + ";" + x.getToNodeId());
+                    });
+                    List<String> allLink = new ArrayList<>();
+                    list.forEach(imageNode -> {
+                        if (null != imageNode.getAdjacency() && imageNode.getAdjacency().size() > 0) {
+                            imageNode.getAdjacency().forEach(adj -> {
+                                allLink.add(imageNode.getId() + ";" + adj);
+                            });
+                        }
+                    });
+                    allLink.forEach(x -> {
+                        if (!existLink.contains(x)) {
+                            //插入新链路
+                            TopoBusinessLinkEntity linkEntity = new TopoBusinessLinkEntity();
+                            linkEntity.setUuid(UUID.randomUUID().toString());
+                            linkEntity.setCanvasId(canvasId);
+                            linkEntity.setFromNodeId(x.split(";")[0]);
+                            linkEntity.setToNodeId(x.split(";")[1]);
+                            dao.insertTopoBusinessLink(linkEntity);
+                        }
+                    });
+
+                } else {
+                    //不存在 则存储新的canvas 所有的node 所有的link
+//                Map<String,String> nameToUuid = new HashMap<>();
+                    TopoCanvasEntity canvas = new TopoCanvasEntity();
+                    String canvasuuid = UUID.randomUUID().toString();
+                    canvas.setUuid(canvasuuid);
+                    canvas.setCanvasName(clusterId);
+                    canvas.setCanvasType(TopoEnum.CanvasType.CANVAS_BUSINESS.value());
+                    dao.insertTopoCanvas(canvas);
+                    list.forEach(imageNode -> {
+//                    nameToUuid.put(imageNode.getName(),imageNode.getId());
                         TopoBusinessNodeEntity businessNode = new TopoBusinessNodeEntity();
-                        businessNode.setCanvasId(canvasId);
+                        businessNode.setCanvasId(canvasuuid);
                         businessNode.setUuid(imageNode.getId());
                         businessNode.setNodeName(imageNode.getName());
                         businessNode.setXPoint(10);
                         businessNode.setYPoint(10);
                         dao.insertTopoBusinessNode(businessNode);
-                    }
-                });
-                List<TopoBusinessLinkEntity> existLinkList = dao.getAllBusinessLinkByCanvasId(canvasId);
-                List<String> existLink = new ArrayList<>();
-                existLinkList.forEach(x -> {
-                    existLink.add(x.getFromNodeId() + ";" + x.getToNodeId());
-                });
-                List<String> allLink = new ArrayList<>();
-                list.forEach(imageNode -> {
-                    if (null != imageNode.getAdjacency() && imageNode.getAdjacency().size() > 0) {
-                        imageNode.getAdjacency().forEach(adj -> {
-                            allLink.add(imageNode.getId() + ";" + adj);
-                        });
-                    }
-                });
-                allLink.forEach(x -> {
-                    if (!existLink.contains(x)) {
-                        //插入新链路
-                        TopoBusinessLinkEntity linkEntity = new TopoBusinessLinkEntity();
-                        linkEntity.setUuid(UUID.randomUUID().toString());
-                        linkEntity.setCanvasId(canvasId);
-                        linkEntity.setFromNodeId(x.split(";")[0]);
-                        linkEntity.setToNodeId(x.split(";")[1]);
-                        dao.insertTopoBusinessLink(linkEntity);
-                    }
-                });
-
-            } else {
-                //不存在 则存储新的canvas 所有的node 所有的link
-//                Map<String,String> nameToUuid = new HashMap<>();
-                TopoCanvasEntity canvas = new TopoCanvasEntity();
-                String canvasuuid = UUID.randomUUID().toString();
-                canvas.setUuid(canvasuuid);
-                canvas.setCanvasName(clusterId);
-                canvas.setCanvasType(TopoEnum.CanvasType.CANVAS_BUSINESS.value());
-                dao.insertTopoCanvas(canvas);
-                list.forEach(imageNode -> {
-//                    nameToUuid.put(imageNode.getName(),imageNode.getId());
-                    TopoBusinessNodeEntity businessNode = new TopoBusinessNodeEntity();
-                    businessNode.setCanvasId(canvasuuid);
-                    businessNode.setUuid(imageNode.getId());
-                    businessNode.setNodeName(imageNode.getName());
-                    businessNode.setXPoint(10);
-                    businessNode.setYPoint(10);
-                    dao.insertTopoBusinessNode(businessNode);
-                });
-                list.forEach(imageNode -> {
-                    if (null != imageNode.getAdjacency() && imageNode.getAdjacency().size() > 0) {
-                        imageNode.getAdjacency().forEach(adj -> {
-                            TopoBusinessLinkEntity linkEntity = new TopoBusinessLinkEntity();
-                            linkEntity.setUuid(UUID.randomUUID().toString());
-                            linkEntity.setCanvasId(canvasuuid);
-                            linkEntity.setFromNodeId(imageNode.getId());
-                            linkEntity.setToNodeId(adj);
-                            dao.insertTopoBusinessLink(linkEntity);
-                        });
-                    }
-                });
-            }
-        });
+                    });
+                    list.forEach(imageNode -> {
+                        if (null != imageNode.getAdjacency() && imageNode.getAdjacency().size() > 0) {
+                            imageNode.getAdjacency().forEach(adj -> {
+                                TopoBusinessLinkEntity linkEntity = new TopoBusinessLinkEntity();
+                                linkEntity.setUuid(UUID.randomUUID().toString());
+                                linkEntity.setCanvasId(canvasuuid);
+                                linkEntity.setFromNodeId(imageNode.getId());
+                                linkEntity.setToNodeId(adj);
+                                dao.insertTopoBusinessLink(linkEntity);
+                            });
+                        }
+                    });
+                }
+            });
+        }
     }
 
     @Override
@@ -338,11 +346,11 @@ public class TopoServiceImpl implements TopoService {
         //删除node
 //        List<TopoNodeEntity> nodes = dao.getTopoNodeBymonitoruuid(monitorUuid);
 //        nodes.forEach(node -> {
-            List<TopoPortEntity> ports = dao.getAllPortByNodeId(monitorUuid);
-            ports.forEach(port -> {
-                dao.deleteTopoLinkByPort(port.getUuid());
-            });
-            dao.deleteTopoPortByNodeUuid(monitorUuid);
+        List<TopoPortEntity> ports = dao.getAllPortByNodeId(monitorUuid);
+        ports.forEach(port -> {
+            dao.deleteTopoLinkByPort(port.getUuid());
+        });
+        dao.deleteTopoPortByNodeUuid(monitorUuid);
 //        });
 
         return dao.deleteTopoNodeBymonitoruuid(monitorUuid);
@@ -350,10 +358,11 @@ public class TopoServiceImpl implements TopoService {
 
     @Override
     public boolean deleteTopoLinkByUuid(String uuid) {
-//        TopoLinkEntity link = dao.getlinkNetTopoLinkByUUid(uuid);
-//        dao.deleteTopoPortByUuid(link.getFromPortId());
-//        dao.deleteTopoPortByUuid(link.getToPortId());
-        return dao.deleteTopoLinkByUuid(uuid);
+        TopoLinkEntity link = dao.getlinkNetTopoLinkByUUid(uuid);
+        dao.deleteTopoLinkByUuid(uuid);
+        dao.deleteTopoPortByUuid(link.getFromPortId());
+        dao.deleteTopoPortByUuid(link.getToPortId());
+        return true;
     }
 
     @Override
